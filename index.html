@@ -494,6 +494,17 @@ section[id]{scroll-margin-top:40px}
 .pw-cap{font-size:14px;color:var(--t2);transition:color .2s}
 .pw:hover .pw-cap{color:var(--t1)}
 .pw-cap .dot{font-style:normal}.more{margin-top:28px}
+.map-btn{height:44px;padding:0 20px;font-size:15px;font-weight:500;color:var(--t2)}
+.map-btn:hover{color:var(--t1)}
+.map-btn i{display:grid}
+.mapbox{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;background:#09090b}
+.mapbox[hidden]{display:none}
+.mapbox-bar{flex:none;height:56px;display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:0 16px;border-bottom:1px solid var(--line)}
+.mapbox-tab{font-size:14px;color:var(--t2);transition:color .2s}
+.mapbox-tab:hover{color:var(--t1)}
+.mapbox-x{width:40px;height:40px;border-radius:12px;border:1px solid var(--line2);display:grid;place-items:center}
+.mapbox-x svg{width:18px;height:18px}
+.mapbox-frame{flex:1;width:100%;border:0;background:#09090b}
 
 /* compare */
 .sub.cmp-sub{max-width:none}
@@ -838,6 +849,7 @@ section[id]{scroll-margin-top:40px}
         <i class="ic" data-ic="code"></i><b>Your app</b><p>The protocol is documented and both apps are MIT licensed.</p><span class="go">Read the protocol</span>
       </a>
     </div>
+    <div class="more"><a class="btn btn-ghost map-btn" id="map-open" href="map/"><i data-ic="nodes"></i>Explore the protocol map</a></div>
     <div class="powered">
       <p class="powered-t">Powered by</p>
       <div class="pw-row">
@@ -928,6 +940,14 @@ section[id]{scroll-margin-top:40px}
   </div>
 </footer>
 
+<div class="mapbox" id="mapbox" role="dialog" aria-modal="true" aria-label="Pombo protocol map" hidden>
+  <div class="mapbox-bar">
+    <a class="mapbox-tab" href="map/" target="_blank" rel="noopener">Open in a new tab</a>
+    <button class="mapbox-x" id="mapbox-x" type="button" aria-label="Close the map"><i data-ic="x"></i></button>
+  </div>
+  <iframe class="mapbox-frame" id="mapbox-frame" title="Pombo protocol map" allow="fullscreen"></iframe>
+</div>
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -990,6 +1010,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
     globe2:'<svg '+O+'><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>',
     phone:'<svg '+O+'><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>',
     code:'<svg '+O+'><path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>',
+    nodes:'<svg '+O+'><circle cx="6" cy="12" r="2.25"/><circle cx="18" cy="6" r="2.25"/><circle cx="18" cy="18" r="2.25"/><path d="M8 11l8-4M8 13l8 4"/></svg>',
     status:'<svg '+F+' style="width:44px"><path d="M2 19h2v-3H2zm4 0h2v-6H6zm4 0h2V10h-2zm4 0h2V7h-2z" transform="scale(.9)"/></svg>'
   };
   var NAMES = { maya:'alice.eth', tomas:'Bob', luna:'Luna', kenji:'kenji.eth', rui:'Rui', a:'Inês', b:'Duarte', c:'Sofia' };
@@ -1055,6 +1076,28 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
   links.addEventListener('click', function(e){
     if (e.target.tagName === 'A') { links.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); solid(); }
   });
+
+  var mapOpen = $('#map-open'), mapBox = $('#mapbox'), mapFrame = $('#mapbox-frame'), mapX = $('#mapbox-x');
+  function mapKey(e){ if (e.key === 'Escape') closeMap(); }
+  function closeMap(){
+    if (mapBox.hidden) return;
+    mapBox.hidden = true;
+    $$('body > *').forEach(function(el){ el.inert = false; });
+    document.documentElement.style.overflow = '';
+    mapOpen.focus();
+  }
+  mapOpen.addEventListener('click', function(e){
+    if (e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || window.innerWidth < 900) return;
+    e.preventDefault();
+    if (!mapFrame.getAttribute('src')) mapFrame.src = mapOpen.getAttribute('href');
+    $$('body > *').forEach(function(el){ if (el !== mapBox) el.inert = true; });
+    mapBox.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    mapX.focus();
+  });
+  mapX.addEventListener('click', closeMap);
+  document.addEventListener('keydown', mapKey);
+  mapFrame.addEventListener('load', function(){ mapFrame.contentWindow.addEventListener('keydown', mapKey); });
 
   // A scene owns its timers: bumping its token makes every pending sleep reject.
   function Scene(){ this.tok = 0; }
