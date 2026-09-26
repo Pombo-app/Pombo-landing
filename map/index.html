@@ -41,7 +41,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .chip{padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);transition:background .15s,border-color .15s}
 .chip.on{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
 
-.canvas{position:relative;width:1600px;height:1000px;margin-left:-40px}
+.canvas{position:relative;width:1600px;height:1000px;margin-left:-40px;transform-origin:0 0}
 .layer{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .dots{z-index:5}
 .blk{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;transition:opacity .2s}
@@ -95,10 +95,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .lbl .sub{font-size:11px;opacity:.85}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(9,9,11,0.97);border-top:1px solid var(--line);padding:8px 16px}
-.bubble{position:absolute;bottom:calc(100% + 12px);left:16px;width:min(320px,calc(100vw - 20px));box-sizing:border-box;padding:11px 14px 12px;border-radius:12px;background:rgba(22,22,27,0.94);border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:left .3s ease,opacity .2s,visibility .2s}
+.bubble{position:absolute;bottom:calc(100% + 12px);left:16px;width:min(320px,calc(100vw - 20px));box-sizing:border-box;padding:11px 14px 12px;border-radius:12px;background:rgba(22,22,27,0.94);border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:left .3s ease,opacity .2s,visibility .2s;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.bubble.free{position:fixed;bottom:auto}
+.bubble.free .tip{display:none}
+.bubble.drag{transition:none;cursor:grabbing}
 .dock.nocap .bubble{opacity:0;visibility:hidden}
 .bubble .tip{position:absolute;top:100%;left:var(--tip,24px);width:10px;height:10px;transform:translate(-50%,-50%) rotate(45deg);background:#16161b;border-right:1px solid rgba(255,255,255,0.14);border-bottom:1px solid rgba(255,255,255,0.14)}
-.bubble .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding-right:22px}
+.bubble .grip{position:absolute;top:17px;right:13px;width:14px;height:9px;fill:rgba(255,255,255,0.3)}
 .bubble .n{flex:none;width:21px;height:21px;border-radius:999px;display:grid;place-items:center;font:600 11px var(--mono);color:var(--bg);background:var(--t1)}
 .bubble .n:empty{display:none}
 .bubble .ch{font:500 12.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,0.85)}
@@ -108,9 +112,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ctl svg{width:14px;height:14px}
 .ctl[hidden]{display:none}
 .fs .head,.fs .picker{display:none}
+html.fs{overflow:hidden}
 .fs .map{padding-top:8px;padding-bottom:0}
+.fs .canvas{touch-action:none;cursor:grab}
+.fs .canvas.panning{cursor:grabbing}
 .ctl.main{width:34px;height:34px;background:var(--acc);border-color:var(--acc);color:#000}
 .ctl.spd{font:600 11px var(--mono)}
+.chan{position:relative;flex:none}
+.ctl.pill{width:auto;padding:0 9px 0 12px;display:flex;gap:6px;font:500 11.5px var(--mono)}
+.ctl.pill svg{width:12px;height:12px}
+.menu{position:absolute;left:0;bottom:calc(100% + 10px);z-index:2;min-width:200px;padding:6px;border-radius:12px;background:#16161b;border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:2px}
+.menu[hidden]{display:none}
+.menu button{padding:8px 10px;border-radius:8px;font:500 12.5px var(--mono);text-align:left;color:var(--t2);white-space:nowrap}
+.menu button:hover{background:rgba(255,255,255,0.06);color:var(--t1)}
+.menu button[aria-checked="true"]{color:var(--t1);background:rgba(246,133,27,0.15)}
 .ctl.tog[aria-pressed="true"]{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
 .track{flex:1;min-width:0;display:flex;gap:4px;height:30px;container-type:inline-size}
 .chap{flex:0 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 9px;border-radius:7px;background:var(--card);border:1px solid var(--line);font:500 11.5px var(--mono);color:var(--t3);white-space:nowrap;overflow:hidden;transition:flex-grow .35s,background .2s}
@@ -131,10 +146,26 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .chap.cur .nm{display:none}
   .chap.cur .no{display:inline;margin-right:2px}
 }
+.compact .head,.compact .picker{zoom:var(--map-unzoom,1)}
+.compact .head{padding:6px 8px 4px}
+.compact .eyebrow{font-size:11.5px}
+.compact .brand{gap:10px;margin-top:6px}
+.compact .brand img{width:36px;height:36px}
+.compact .brand h1{font-size:28px}
+.compact .facts{grid-template-columns:1fr;gap:6px;margin-top:12px;font-size:14px;line-height:1.4}
+.compact .facts li{align-items:baseline}
+.compact .facts li span{width:16px;transform:translateY(-4px)}
+.compact .picker{flex-wrap:wrap;white-space:normal;row-gap:8px;padding:6px 8px 10px;font-size:13px}
+@media (max-width:760px),(max-height:500px){
+  .bubble{width:min(290px,calc(100vw - 20px));padding:9px 12px 10px}
+  .bubble .bh{margin-bottom:4px}
+  .bubble .grip{top:14px;right:11px}
+  .bubble .n{width:19px;height:19px;font-size:10px}
+  .bubble p{font-size:12.5px;line-height:1.4}
+  .bubble .ch{font-size:10.5px}
+}
 @media (max-width:760px){
   .dock{padding:8px 10px}
-  .bubble p{font-size:13.5px}
-  .bubble .ch{font-size:11.5px}
   .tl{flex-wrap:wrap}
   .track{order:-1;flex:1 0 100%;gap:3px}
   #cc{margin-left:auto}
@@ -150,7 +181,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function fit() {
     var d = document.documentElement, dock = document.getElementById('dock');
     var dh = dock ? dock.offsetHeight : 51;
-    d.style.setProperty('--map-zoom', Math.min(1, d.clientWidth / 1680, (innerHeight - dh - 8) / 1000));
+    var z = Math.min(1, d.clientWidth / 1680, (innerHeight - dh - 8) / 1000);
+    d.style.setProperty('--map-zoom', z);
+    d.style.setProperty('--map-unzoom', 1 / z);
+    d.classList.toggle('compact', z < 0.7);
     document.body && (document.body.style.paddingBottom = dh + 'px');
   }
   fit();
@@ -264,11 +298,13 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 </div>
 
 <div class="dock nocap" id="dock">
-  <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i></div>
+  <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i><svg class="grip" viewBox="0 0 16 10" aria-hidden="true"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="14" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="14" cy="8" r="1.5"/></svg></div>
   <div class="tl">
     <button class="ctl main" id="play" aria-label="Play the story"></button>
-    <button class="ctl" id="prev" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h2v12H7zM20 6v12L10 12z"/></svg></button>
-    <button class="ctl" id="next" aria-label="Next step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6v12l10-6z"/></svg></button>
+    <div class="chan">
+      <button class="ctl pill" id="chan" aria-haspopup="menu" aria-expanded="false" aria-controls="chanMenu"><span id="chanLabel"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+      <div class="menu" id="chanMenu" role="menu" aria-label="Channel" hidden></div>
+    </div>
     <div class="track" id="track"></div>
     <button class="ctl tog" id="cc" aria-pressed="false" aria-label="Captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 12h4M14 12h3M7 15.5h8"/></svg></button>
     <button class="ctl tog spd" id="speed" aria-pressed="false" aria-label="Double speed">2×</button>
@@ -525,16 +561,30 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   });
 
   // ---- channel type ----
+  var SHORT = { open: 'Open', protected: 'Protected', gated: 'Gated', dm: 'DMs' };
   Object.keys(TYPES).forEach(function (k) {
     var b = document.createElement('button');
     b.className = 'chip'; b.textContent = TYPES[k].label; b.setAttribute('data-type', k);
     b.addEventListener('click', function () { setType(k); });
     $('#picker').appendChild(b);
+    var m = document.createElement('button');
+    m.setAttribute('role', 'menuitemradio'); m.setAttribute('data-type', k); m.textContent = TYPES[k].label;
+    m.addEventListener('click', function () { menu(false); setType(k); });
+    $('#chanMenu').appendChild(m);
   });
+  function menu(open) {
+    $('#chanMenu').hidden = !open;
+    $('#chan').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) $('#chanMenu [aria-checked="true"]').focus();
+  }
+  $('#chan').addEventListener('click', function () { menu($('#chanMenu').hidden); });
+  document.addEventListener('click', function (e) { if (!$('#chanMenu').hidden && !e.target.closest('.chan')) menu(false); });
   function setType(k) {
     state.type = k;
     var ct = TYPES[k];
     document.querySelectorAll('#picker .chip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-type') === k); });
+    document.querySelectorAll('#chanMenu button').forEach(function (b) { b.setAttribute('aria-checked', b.getAttribute('data-type') === k ? 'true' : 'false'); });
+    $('#chanLabel').textContent = SHORT[k];
     $('#cipher').textContent = ct.cipher;
     $('#krows').innerHTML = '';
     ct.rows.forEach(function (r) {
@@ -743,8 +793,17 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     chEl.textContent = ch.title;
     tx.textContent = st.text;
   }
+  var free = null, drag = null;
   function placeBubble() {
-    var b = $('#bubble'), anchor = state.active && state.ci >= 0 && chapEls[state.ci].querySelectorAll('.tick')[state.si];
+    var b = $('#bubble');
+    b.classList.toggle('free', !!free);
+    if (free) {
+      b.style.left = Math.max(4, Math.min(document.documentElement.clientWidth - b.offsetWidth - 4, free.x)) + 'px';
+      b.style.top = Math.max(4, Math.min(innerHeight - b.offsetHeight - 4, free.y)) + 'px';
+      return;
+    }
+    b.style.top = '';
+    var anchor = state.active && state.ci >= 0 && chapEls[state.ci].querySelectorAll('.tick')[state.si];
     if (!anchor || !anchor.offsetWidth) anchor = $('#play');
     var r = anchor.getBoundingClientRect(), x = r.left + r.width / 2, w = b.offsetWidth;
     var left = Math.max(10, Math.min(document.documentElement.clientWidth - w - 10, x - w / 2));
@@ -831,11 +890,30 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     seek(all[target] + 0.001);
   }
   $('#play').addEventListener('click', function () { state.playing ? pause() : play(); });
-  $('#prev').addEventListener('click', function () { stepTo(-1); });
-  $('#next').addEventListener('click', function () { stepTo(1); });
   $('#stop').addEventListener('click', stop);
   track.addEventListener('transitionend', placeBubble);
   addEventListener('resize', placeBubble);
+  $('#bubble').addEventListener('pointerdown', function (e) {
+    if (e.button) return;
+    var r = this.getBoundingClientRect();
+    drag = { id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false };
+    this.setPointerCapture(e.pointerId);
+    this.classList.add('drag');
+  });
+  $('#bubble').addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 5) return;
+    drag.moved = true;
+    free = { x: e.clientX - drag.dx, y: e.clientY - drag.dy };
+    placeBubble();
+  });
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag = null;
+    $('#bubble').classList.remove('drag');
+  }
+  $('#bubble').addEventListener('pointerup', endDrag);
+  $('#bubble').addEventListener('pointercancel', endDrag);
   $('#speed').addEventListener('click', function () {
     state.speed = state.speed === 1 ? 2 : 1;
     this.setAttribute('aria-pressed', state.speed === 2 ? 'true' : 'false');
@@ -843,15 +921,29 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   $('#cc').addEventListener('click', function () {
     var off = $('#dock').classList.toggle('nocap');
     this.setAttribute('aria-pressed', off ? 'false' : 'true');
+    if (!off && free) { free = null; placeBubble(); }
   });
 
   var root = document.documentElement;
   var EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
   var SHRINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
   function fsOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  var wake = null;
+  function keepAwake(on) {
+    if (!on) { if (wake) wake.release(); wake = null; return; }
+    if (wake || !navigator.wakeLock) return;
+    navigator.wakeLock.request('screen').then(function (lock) {
+      if (!fsOn()) { lock.release(); return; }
+      wake = lock;
+      lock.addEventListener('release', function () { if (wake === lock) wake = null; });
+    }).catch(function () {});
+  }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && fsOn()) keepAwake(true); });
   function onFullscreen() {
     var on = fsOn();
     root.classList.toggle('fs', on);
+    keepAwake(on);
+    if (!on) setView(1, 0, 0);
     $('#fs').innerHTML = on ? SHRINK : EXPAND;
     $('#fs').setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
     if (window.__fitMap) window.__fitMap();
@@ -869,7 +961,74 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     document.addEventListener('fullscreenchange', onFullscreen);
     document.addEventListener('webkitfullscreenchange', onFullscreen);
   }
+
+  // The view is in canvas units; --map-zoom scales them to screen pixels, so pointer deltas are divided by it.
+  var canvas = $('#canvas'), view = { s: 1, x: 0, y: 0 }, pointers = new Map(), pinch = null, tap = null, lastTap = 0;
+  function setView(s, x, y) {
+    view.s = Math.max(1, Math.min(4, s));
+    view.x = Math.max(1600 * (1 - view.s), Math.min(0, x));
+    view.y = Math.max(1000 * (1 - view.s), Math.min(0, y));
+    canvas.style.transform = view.s === 1 ? '' : 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.s + ')';
+  }
+  function frameOrigin() {
+    var r = canvas.getBoundingClientRect(), z = parseFloat(getComputedStyle(root).getPropertyValue('--map-zoom')) || 1;
+    return { x: r.left - z * view.x, y: r.top - z * view.y, z: z };
+  }
+  function zoomAround(s, cx, cy, from) {
+    var o = frameOrigin(), f = from || view;
+    var ux = ((cx - o.x) / o.z - f.x) / f.s, uy = ((cy - o.y) / o.z - f.y) / f.s;
+    var ns = Math.max(1, Math.min(4, s));
+    return [ns, ux, uy, o];
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!fsOn()) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('panning');
+    tap = pointers.size === 1 ? { x: e.clientX, y: e.clientY } : null;
+    if (pointers.size === 2) {
+      var p = Array.from(pointers.values());
+      pinch = { d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, s: view.s, x: view.x, y: view.y };
+    }
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    var prev = pointers.get(e.pointerId);
+    if (!prev) return;
+    var cur = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, cur);
+    if (tap && Math.abs(cur.x - tap.x) + Math.abs(cur.y - tap.y) > 8) tap = null;
+    if (pinch && pointers.size >= 2) {
+      var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+      var mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2;
+      var a = zoomAround(pinch.s * d / pinch.d, pinch.mx, pinch.my, pinch);
+      setView(a[0], (mx - a[3].x) / a[3].z - a[0] * a[1], (my - a[3].y) / a[3].z - a[0] * a[2]);
+    } else if (pointers.size === 1) {
+      var z = frameOrigin().z;
+      setView(view.s, view.x + (cur.x - prev.x) / z, view.y + (cur.y - prev.y) / z);
+    }
+  });
+  function release(e) {
+    if (!pointers.delete(e.pointerId)) return;
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size) return;
+    canvas.classList.remove('panning');
+    if (tap && e.type === 'pointerup') {
+      var now = e.timeStamp;
+      if (now - lastTap < 320) { setView(1, 0, 0); lastTap = 0; } else lastTap = now;
+    }
+    tap = null;
+  }
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('wheel', function (e) {
+    if (!fsOn()) return;
+    e.preventDefault();
+    var a = zoomAround(view.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX, e.clientY);
+    setView(a[0], (e.clientX - a[3].x) / a[3].z - a[0] * a[1], (e.clientY - a[3].y) / a[3].z - a[0] * a[2]);
+  }, { passive: false });
+
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('#chanMenu').hidden) { menu(false); $('#chan').focus(); return; }
     if (e.target && /^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
     if (e.key === ' ') { e.preventDefault(); state.playing ? pause() : play(); }
     else if (e.key === 'ArrowRight' && state.active) { e.preventDefault(); stepTo(1); }
