@@ -95,10 +95,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .lbl .sub{font-size:11px;opacity:.85}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(9,9,11,0.97);border-top:1px solid var(--line);padding:8px 16px}
-.bubble{position:absolute;bottom:calc(100% + 12px);left:16px;width:min(320px,calc(100vw - 20px));box-sizing:border-box;padding:11px 14px 12px;border-radius:12px;background:rgba(22,22,27,0.94);border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:left .3s ease,opacity .2s,visibility .2s}
+.bubble{position:absolute;bottom:calc(100% + 12px);left:16px;width:min(320px,calc(100vw - 20px));box-sizing:border-box;padding:11px 14px 12px;border-radius:12px;background:rgba(22,22,27,0.94);border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:left .3s ease,opacity .2s,visibility .2s;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.bubble.free{position:fixed;bottom:auto}
+.bubble.free .tip{display:none}
+.bubble.drag{transition:none;cursor:grabbing}
 .dock.nocap .bubble{opacity:0;visibility:hidden}
 .bubble .tip{position:absolute;top:100%;left:var(--tip,24px);width:10px;height:10px;transform:translate(-50%,-50%) rotate(45deg);background:#16161b;border-right:1px solid rgba(255,255,255,0.14);border-bottom:1px solid rgba(255,255,255,0.14)}
-.bubble .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding-right:22px}
+.bubble .grip{position:absolute;top:17px;right:13px;width:14px;height:9px;fill:rgba(255,255,255,0.3)}
 .bubble .n{flex:none;width:21px;height:21px;border-radius:999px;display:grid;place-items:center;font:600 11px var(--mono);color:var(--bg);background:var(--t1)}
 .bubble .n:empty{display:none}
 .bubble .ch{font:500 12.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,0.85)}
@@ -152,6 +156,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 @media (max-width:760px),(max-height:500px){
   .bubble{width:min(290px,calc(100vw - 20px));padding:9px 12px 10px}
   .bubble .bh{margin-bottom:4px}
+  .bubble .grip{top:14px;right:11px}
   .bubble .n{width:19px;height:19px;font-size:10px}
   .bubble p{font-size:12.5px;line-height:1.4}
   .bubble .ch{font-size:10.5px}
@@ -290,7 +295,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 </div>
 
 <div class="dock nocap" id="dock">
-  <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i></div>
+  <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i><svg class="grip" viewBox="0 0 16 10" aria-hidden="true"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="14" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="14" cy="8" r="1.5"/></svg></div>
   <div class="tl">
     <button class="ctl main" id="play" aria-label="Play the story"></button>
     <div class="chan">
@@ -785,8 +790,17 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     chEl.textContent = ch.title;
     tx.textContent = st.text;
   }
+  var free = null, drag = null;
   function placeBubble() {
-    var b = $('#bubble'), anchor = state.active && state.ci >= 0 && chapEls[state.ci].querySelectorAll('.tick')[state.si];
+    var b = $('#bubble');
+    b.classList.toggle('free', !!free);
+    if (free) {
+      b.style.left = Math.max(4, Math.min(document.documentElement.clientWidth - b.offsetWidth - 4, free.x)) + 'px';
+      b.style.top = Math.max(4, Math.min(innerHeight - b.offsetHeight - 4, free.y)) + 'px';
+      return;
+    }
+    b.style.top = '';
+    var anchor = state.active && state.ci >= 0 && chapEls[state.ci].querySelectorAll('.tick')[state.si];
     if (!anchor || !anchor.offsetWidth) anchor = $('#play');
     var r = anchor.getBoundingClientRect(), x = r.left + r.width / 2, w = b.offsetWidth;
     var left = Math.max(10, Math.min(document.documentElement.clientWidth - w - 10, x - w / 2));
@@ -876,6 +890,27 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   $('#stop').addEventListener('click', stop);
   track.addEventListener('transitionend', placeBubble);
   addEventListener('resize', placeBubble);
+  $('#bubble').addEventListener('pointerdown', function (e) {
+    if (e.button) return;
+    var r = this.getBoundingClientRect();
+    drag = { id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false };
+    this.setPointerCapture(e.pointerId);
+    this.classList.add('drag');
+  });
+  $('#bubble').addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 5) return;
+    drag.moved = true;
+    free = { x: e.clientX - drag.dx, y: e.clientY - drag.dy };
+    placeBubble();
+  });
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag = null;
+    $('#bubble').classList.remove('drag');
+  }
+  $('#bubble').addEventListener('pointerup', endDrag);
+  $('#bubble').addEventListener('pointercancel', endDrag);
   $('#speed').addEventListener('click', function () {
     state.speed = state.speed === 1 ? 2 : 1;
     this.setAttribute('aria-pressed', state.speed === 2 ? 'true' : 'false');
@@ -883,6 +918,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   $('#cc').addEventListener('click', function () {
     var off = $('#dock').classList.toggle('nocap');
     this.setAttribute('aria-pressed', off ? 'false' : 'true');
+    if (!off && free) { free = null; placeBubble(); }
   });
 
   var root = document.documentElement;
