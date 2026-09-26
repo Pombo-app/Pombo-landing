@@ -131,10 +131,25 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .chap.cur .nm{display:none}
   .chap.cur .no{display:inline;margin-right:2px}
 }
+.compact .head,.compact .picker{zoom:var(--map-unzoom,1)}
+.compact .head{padding:6px 8px 4px}
+.compact .eyebrow{font-size:11.5px}
+.compact .brand{gap:10px;margin-top:6px}
+.compact .brand img{width:36px;height:36px}
+.compact .brand h1{font-size:28px}
+.compact .facts{grid-template-columns:1fr;gap:6px;margin-top:12px;font-size:14px;line-height:1.4}
+.compact .facts li{align-items:baseline}
+.compact .facts li span{width:16px;transform:translateY(-4px)}
+.compact .picker{flex-wrap:wrap;white-space:normal;row-gap:8px;padding:6px 8px 10px;font-size:13px}
+@media (max-width:760px),(max-height:500px){
+  .bubble{width:min(290px,calc(100vw - 20px));padding:9px 12px 10px}
+  .bubble .bh{margin-bottom:4px}
+  .bubble .n{width:19px;height:19px;font-size:10px}
+  .bubble p{font-size:12.5px;line-height:1.4}
+  .bubble .ch{font-size:10.5px}
+}
 @media (max-width:760px){
   .dock{padding:8px 10px}
-  .bubble p{font-size:13.5px}
-  .bubble .ch{font-size:11.5px}
   .tl{flex-wrap:wrap}
   .track{order:-1;flex:1 0 100%;gap:3px}
   #cc{margin-left:auto}
@@ -150,7 +165,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function fit() {
     var d = document.documentElement, dock = document.getElementById('dock');
     var dh = dock ? dock.offsetHeight : 51;
-    d.style.setProperty('--map-zoom', Math.min(1, d.clientWidth / 1680, (innerHeight - dh - 8) / 1000));
+    var z = Math.min(1, d.clientWidth / 1680, (innerHeight - dh - 8) / 1000);
+    d.style.setProperty('--map-zoom', z);
+    d.style.setProperty('--map-unzoom', 1 / z);
+    d.classList.toggle('compact', z < 0.7);
     document.body && (document.body.style.paddingBottom = dh + 'px');
   }
   fit();
