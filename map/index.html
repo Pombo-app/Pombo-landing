@@ -41,7 +41,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .chip{padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);transition:background .15s,border-color .15s}
 .chip.on{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
 
-.canvas{position:relative;width:1600px;height:1000px;margin-left:-40px}
+.canvas{position:relative;width:1600px;height:1000px;margin-left:-40px;transform-origin:0 0}
 .layer{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .dots{z-index:5}
 .blk{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;transition:opacity .2s}
@@ -112,7 +112,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ctl svg{width:14px;height:14px}
 .ctl[hidden]{display:none}
 .fs .head,.fs .picker{display:none}
+html.fs{overflow:hidden}
 .fs .map{padding-top:8px;padding-bottom:0}
+.fs .canvas{touch-action:none;cursor:grab}
+.fs .canvas.panning{cursor:grabbing}
 .ctl.main{width:34px;height:34px;background:var(--acc);border-color:var(--acc);color:#000}
 .ctl.spd{font:600 11px var(--mono)}
 .chan{position:relative;flex:none}
@@ -940,6 +943,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     var on = fsOn();
     root.classList.toggle('fs', on);
     keepAwake(on);
+    if (!on) setView(1, 0, 0);
     $('#fs').innerHTML = on ? SHRINK : EXPAND;
     $('#fs').setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
     if (window.__fitMap) window.__fitMap();
@@ -957,6 +961,72 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     document.addEventListener('fullscreenchange', onFullscreen);
     document.addEventListener('webkitfullscreenchange', onFullscreen);
   }
+
+  // The view is in canvas units; --map-zoom scales them to screen pixels, so pointer deltas are divided by it.
+  var canvas = $('#canvas'), view = { s: 1, x: 0, y: 0 }, pointers = new Map(), pinch = null, tap = null, lastTap = 0;
+  function setView(s, x, y) {
+    view.s = Math.max(1, Math.min(4, s));
+    view.x = Math.max(1600 * (1 - view.s), Math.min(0, x));
+    view.y = Math.max(1000 * (1 - view.s), Math.min(0, y));
+    canvas.style.transform = view.s === 1 ? '' : 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.s + ')';
+  }
+  function frameOrigin() {
+    var r = canvas.getBoundingClientRect(), z = parseFloat(getComputedStyle(root).getPropertyValue('--map-zoom')) || 1;
+    return { x: r.left - z * view.x, y: r.top - z * view.y, z: z };
+  }
+  function zoomAround(s, cx, cy, from) {
+    var o = frameOrigin(), f = from || view;
+    var ux = ((cx - o.x) / o.z - f.x) / f.s, uy = ((cy - o.y) / o.z - f.y) / f.s;
+    var ns = Math.max(1, Math.min(4, s));
+    return [ns, ux, uy, o];
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!fsOn()) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('panning');
+    tap = pointers.size === 1 ? { x: e.clientX, y: e.clientY } : null;
+    if (pointers.size === 2) {
+      var p = Array.from(pointers.values());
+      pinch = { d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, s: view.s, x: view.x, y: view.y };
+    }
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    var prev = pointers.get(e.pointerId);
+    if (!prev) return;
+    var cur = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, cur);
+    if (tap && Math.abs(cur.x - tap.x) + Math.abs(cur.y - tap.y) > 8) tap = null;
+    if (pinch && pointers.size >= 2) {
+      var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+      var mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2;
+      var a = zoomAround(pinch.s * d / pinch.d, pinch.mx, pinch.my, pinch);
+      setView(a[0], (mx - a[3].x) / a[3].z - a[0] * a[1], (my - a[3].y) / a[3].z - a[0] * a[2]);
+    } else if (pointers.size === 1) {
+      var z = frameOrigin().z;
+      setView(view.s, view.x + (cur.x - prev.x) / z, view.y + (cur.y - prev.y) / z);
+    }
+  });
+  function release(e) {
+    if (!pointers.delete(e.pointerId)) return;
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size) return;
+    canvas.classList.remove('panning');
+    if (tap && e.type === 'pointerup') {
+      var now = e.timeStamp;
+      if (now - lastTap < 320) { setView(1, 0, 0); lastTap = 0; } else lastTap = now;
+    }
+    tap = null;
+  }
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('wheel', function (e) {
+    if (!fsOn()) return;
+    e.preventDefault();
+    var a = zoomAround(view.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX, e.clientY);
+    setView(a[0], (e.clientX - a[3].x) / a[3].z - a[0] * a[1], (e.clientY - a[3].y) / a[3].z - a[0] * a[2]);
+  }, { passive: false });
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !$('#chanMenu').hidden) { menu(false); $('#chan').focus(); return; }
     if (e.target && /^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
