@@ -111,6 +111,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .fs .map{padding-top:8px;padding-bottom:0}
 .ctl.main{width:34px;height:34px;background:var(--acc);border-color:var(--acc);color:#000}
 .ctl.spd{font:600 11px var(--mono)}
+.chan{position:relative;flex:none}
+.ctl.pill{width:auto;padding:0 9px 0 12px;display:flex;gap:6px;font:500 11.5px var(--mono)}
+.ctl.pill svg{width:12px;height:12px}
+.menu{position:absolute;left:0;bottom:calc(100% + 10px);z-index:2;min-width:200px;padding:6px;border-radius:12px;background:#16161b;border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:2px}
+.menu[hidden]{display:none}
+.menu button{padding:8px 10px;border-radius:8px;font:500 12.5px var(--mono);text-align:left;color:var(--t2);white-space:nowrap}
+.menu button:hover{background:rgba(255,255,255,0.06);color:var(--t1)}
+.menu button[aria-checked="true"]{color:var(--t1);background:rgba(246,133,27,0.15)}
 .ctl.tog[aria-pressed="true"]{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
 .track{flex:1;min-width:0;display:flex;gap:4px;height:30px;container-type:inline-size}
 .chap{flex:0 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 9px;border-radius:7px;background:var(--card);border:1px solid var(--line);font:500 11.5px var(--mono);color:var(--t3);white-space:nowrap;overflow:hidden;transition:flex-grow .35s,background .2s}
@@ -285,8 +293,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i></div>
   <div class="tl">
     <button class="ctl main" id="play" aria-label="Play the story"></button>
-    <button class="ctl" id="prev" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h2v12H7zM20 6v12L10 12z"/></svg></button>
-    <button class="ctl" id="next" aria-label="Next step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6v12l10-6z"/></svg></button>
+    <div class="chan">
+      <button class="ctl pill" id="chan" aria-haspopup="menu" aria-expanded="false" aria-controls="chanMenu"><span id="chanLabel"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+      <div class="menu" id="chanMenu" role="menu" aria-label="Channel" hidden></div>
+    </div>
     <div class="track" id="track"></div>
     <button class="ctl tog" id="cc" aria-pressed="false" aria-label="Captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 12h4M14 12h3M7 15.5h8"/></svg></button>
     <button class="ctl tog spd" id="speed" aria-pressed="false" aria-label="Double speed">2×</button>
@@ -543,16 +553,30 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   });
 
   // ---- channel type ----
+  var SHORT = { open: 'Open', protected: 'Protected', gated: 'Gated', dm: 'DMs' };
   Object.keys(TYPES).forEach(function (k) {
     var b = document.createElement('button');
     b.className = 'chip'; b.textContent = TYPES[k].label; b.setAttribute('data-type', k);
     b.addEventListener('click', function () { setType(k); });
     $('#picker').appendChild(b);
+    var m = document.createElement('button');
+    m.setAttribute('role', 'menuitemradio'); m.setAttribute('data-type', k); m.textContent = TYPES[k].label;
+    m.addEventListener('click', function () { menu(false); setType(k); });
+    $('#chanMenu').appendChild(m);
   });
+  function menu(open) {
+    $('#chanMenu').hidden = !open;
+    $('#chan').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) $('#chanMenu [aria-checked="true"]').focus();
+  }
+  $('#chan').addEventListener('click', function () { menu($('#chanMenu').hidden); });
+  document.addEventListener('click', function (e) { if (!$('#chanMenu').hidden && !e.target.closest('.chan')) menu(false); });
   function setType(k) {
     state.type = k;
     var ct = TYPES[k];
     document.querySelectorAll('#picker .chip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-type') === k); });
+    document.querySelectorAll('#chanMenu button').forEach(function (b) { b.setAttribute('aria-checked', b.getAttribute('data-type') === k ? 'true' : 'false'); });
+    $('#chanLabel').textContent = SHORT[k];
     $('#cipher').textContent = ct.cipher;
     $('#krows').innerHTML = '';
     ct.rows.forEach(function (r) {
@@ -849,8 +873,6 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     seek(all[target] + 0.001);
   }
   $('#play').addEventListener('click', function () { state.playing ? pause() : play(); });
-  $('#prev').addEventListener('click', function () { stepTo(-1); });
-  $('#next').addEventListener('click', function () { stepTo(1); });
   $('#stop').addEventListener('click', stop);
   track.addEventListener('transitionend', placeBubble);
   addEventListener('resize', placeBubble);
@@ -888,6 +910,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     document.addEventListener('webkitfullscreenchange', onFullscreen);
   }
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('#chanMenu').hidden) { menu(false); $('#chan').focus(); return; }
     if (e.target && /^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
     if (e.key === ' ') { e.preventDefault(); state.playing ? pause() : play(); }
     else if (e.key === 'ArrowRight' && state.active) { e.preventDefault(); stepTo(1); }
