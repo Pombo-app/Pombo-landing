@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pombo Protocol</title>
+<meta name="description" content="How Pombo works: clients, the Streamr network, Polygon, The Graph, storage providers and the push relay, and the flows between them.">
+<link rel="canonical" href="https://pombo.cc/map/">
+<meta name="theme-color" content="#09090b">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pombo">
+<meta property="og:url" content="https://pombo.cc/map/">
+<meta property="og:title" content="Pombo Protocol">
+<meta property="og:description" content="How Pombo works: clients, the Streamr network, Polygon, The Graph, storage providers and the push relay, and the flows between them.">
+<meta property="og:image" content="https://pombo.cc/favicon/og-banner.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+<link rel="shortcut icon" href="../favicon/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+<link rel="preload" href="../fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 800;font-display:swap;src:url(../fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#09090b;--card:#16161b;--line:rgba(255,255,255,0.08);--t1:#f0f0f0;--t2:rgba(255,255,255,0.6);--t3:rgba(255,255,255,0.45);
+  --streamr:#FF5C00;--chain:#8247E5;--push:#60a5fa;--http:rgba(255,255,255,0.5);--acc:#F6851B;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+html{overflow-y:scroll;overflow-x:hidden;background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.map{zoom:var(--map-zoom,1);width:1600px;margin:0 auto;padding:48px 40px 24px;display:flex;flex-direction:column;gap:22px}
+
+.head{padding:0 40px}
+.eyebrow{font-family:var(--mono);font-size:13.2px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.brand{display:flex;align-items:center;gap:14px;margin-top:8px}
+.brand img{width:52px;height:52px}
+.brand h1{margin:0;font-size:40px;font-weight:700;letter-spacing:-.03em}
+.facts{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:auto auto;justify-content:start;gap:6px 40px;font-size:15px;line-height:1.45;color:rgba(255,255,255,0.72)}
+.facts li{display:flex;align-items:center;gap:12px}
+.facts li span{flex:none;width:22px;border-top:2px solid}
+.picker{display:flex;align-items:center;gap:7px;padding:0 40px;font-family:var(--mono);font-size:14.5px;white-space:nowrap}
+.picker > span{color:var(--t3);margin-right:4px}
+.chip{padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);transition:background .15s,border-color .15s}
+.chip.on{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
+
+.canvas{position:relative;width:1600px;height:1000px;margin-left:-40px}
+.layer{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.dots{z-index:5}
+.blk{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;transition:opacity .2s}
+.solid{background:var(--card);border:1px solid var(--line);border-radius:10px}
+.group{border:1px dashed rgba(255,255,255,0.12);border-radius:14px}
+.row{display:flex;justify-content:space-between;align-items:baseline}
+.kick{font-family:var(--mono);font-size:12.1px;text-transform:uppercase;letter-spacing:.06em}
+.cap{font-family:var(--mono);font-size:13.2px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,0.5)}
+.h20{font-size:20px;font-weight:600}
+.h18{font-size:18px;font-weight:600}
+.d14{font-size:15.4px;color:var(--t2)}
+.d13{font-size:14.3px;color:var(--t2);text-wrap:pretty}
+.mono11{font-family:var(--mono);font-size:12.1px}
+.mono12{font-family:var(--mono);font-size:13.2px}
+.mini{padding:9px 12px;border-radius:6px;font-family:var(--mono);font-size:13.2px;display:flex;flex-direction:column;gap:2px}
+.mini span{color:rgba(255,255,255,0.5)}
+.mini.chain{background:rgba(130,71,229,0.12)}
+.mini.chain.slot{background:none;border:1px dashed rgba(130,71,229,0.45)}
+.mini.grey{background:#1e1e1e}
+.mini.grey.slot{background:none;border:1px dashed rgba(255,255,255,0.15)}
+.card{flex:none;height:76px;box-sizing:border-box;padding:9px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:2px;transition:opacity .3s,border-color .3s}
+.card .top{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:13.2px;color:var(--t3)}
+.card .out{opacity:0;transition:opacity .3s}
+.card .what{font-size:17px;font-weight:600}
+.card .push{margin-top:auto;font-family:var(--mono);font-size:12.1px;color:var(--push)}
+.keys{flex:1;box-sizing:border-box;padding:12px 16px;border-radius:10px;background:#0f0f12;border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px}
+.krow{display:flex;gap:10px;align-items:baseline;margin:-4px -8px;padding:4px 8px;border-radius:6px;transition:background .3s}
+.krow.lit{background:rgba(74,222,128,0.12)}
+.krow i{flex:none;width:10px;height:10px;border-radius:2px;transform:translateY(1px)}
+.krow b{display:block;font-weight:600;font-size:14.3px}
+.krow span{display:block;color:rgba(255,255,255,0.55);font-size:13.2px;line-height:1.3;text-wrap:pretty}
+.srow{padding:6px 12px;border-radius:6px;background:var(--card);font-size:14.3px;display:flex;flex-direction:column;gap:3px;transition:opacity .2s}
+.srow b{font-weight:500}
+.srow b i{font-style:normal;font-family:var(--mono);color:var(--streamr)}
+.srow p{margin:0;color:rgba(255,255,255,0.5)}
+.pill{align-self:flex-start;white-space:nowrap;font-family:var(--mono);font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid}
+.nodes{display:flex;flex-direction:column;gap:6px;margin-top:auto;padding:10px;border-radius:8px;background:#1e1e1e}
+.nodes .cl{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--t3)}
+.node{padding:7px 10px;border-radius:6px;background:var(--card);border:1px solid var(--line);font-family:var(--mono);font-size:13.2px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.node b{font-weight:500}
+.node span{color:rgba(255,255,255,0.5);font-size:12.1px}
+.feats{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:12.1px;color:rgba(255,255,255,0.7)}
+.feats div{padding:4px 7px;border-radius:4px;background:#1e1e1e}
+.regs{margin-top:auto;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;align-items:center;font-family:var(--mono);font-size:12.1px}
+.regs .tg{padding:2px 8px;border-radius:5px;color:rgba(255,255,255,0.55);transition:background .3s,color .3s}
+.regs .tg.hit{color:var(--push);background:rgba(96,165,250,0.2)}
+.regs .who{color:rgba(255,255,255,0.7)}
+.lbl{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;padding:3px 9px;border-radius:12px;background:var(--bg);border:1px solid;font-family:var(--mono);font-size:12.1px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:opacity .2s;pointer-events:none;z-index:4}
+.lbl .st{font-weight:500;color:var(--bg);border-radius:999px;padding:0 6px}
+.lbl .st:empty,.lbl .sub:empty{display:none}
+.lbl .sub{font-size:11px;opacity:.85}
+
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(9,9,11,0.97);border-top:1px solid var(--line);padding:8px 16px}
+.bubble{position:absolute;bottom:calc(100% + 12px);left:16px;width:min(320px,calc(100vw - 20px));box-sizing:border-box;padding:11px 14px 12px;border-radius:12px;background:rgba(22,22,27,0.94);border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 30px rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:left .3s ease,opacity .2s,visibility .2s}
+.dock.nocap .bubble{opacity:0;visibility:hidden}
+.bubble .tip{position:absolute;top:100%;left:var(--tip,24px);width:10px;height:10px;transform:translate(-50%,-50%) rotate(45deg);background:#16161b;border-right:1px solid rgba(255,255,255,0.14);border-bottom:1px solid rgba(255,255,255,0.14)}
+.bubble .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble .n{flex:none;width:21px;height:21px;border-radius:999px;display:grid;place-items:center;font:600 11px var(--mono);color:var(--bg);background:var(--t1)}
+.bubble .n:empty{display:none}
+.bubble .ch{font:500 12.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,0.85)}
+.bubble p{margin:0;font-size:14.5px;line-height:1.45;color:rgba(255,255,255,0.9);text-wrap:pretty}
+.tl{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px}
+.ctl{flex:none;width:30px;height:30px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);display:grid;place-items:center}
+.ctl svg{width:14px;height:14px}
+.ctl[hidden]{display:none}
+.fs .head,.fs .picker{display:none}
+.fs .map{padding-top:8px;padding-bottom:0}
+.ctl.main{width:34px;height:34px;background:var(--acc);border-color:var(--acc);color:#000}
+.ctl.spd{font:600 11px var(--mono)}
+.ctl.tog[aria-pressed="true"]{background:rgba(246,133,27,0.15);border-color:rgba(246,133,27,0.6)}
+.track{flex:1;min-width:0;display:flex;gap:4px;height:30px;container-type:inline-size}
+.chap{flex:0 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 9px;border-radius:7px;background:var(--card);border:1px solid var(--line);font:500 11.5px var(--mono);color:var(--t3);white-space:nowrap;overflow:hidden;transition:flex-grow .35s,background .2s}
+.chap .no{display:none}
+.chap.done{color:var(--t2)}
+.chap.cur{flex:1 1 auto;justify-content:flex-start;position:relative;padding:0 0 0 11px;background:#101014;border-color:rgba(246,133,27,0.5);color:var(--t1);cursor:default}
+.chap.cur .nm{flex:none;margin-right:12px;position:relative;z-index:1}
+.chap .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(246,133,27,0.12);pointer-events:none}
+.chap .ticks{position:relative;flex:1;height:100%;margin:0 16px 0 10px}
+.chap .tick{position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:999px;display:grid;place-items:center;font:600 10.5px var(--mono);background:#1e1e24;color:var(--t2);border:1px solid rgba(255,255,255,0.12)}
+.chap .tick.on{color:var(--bg);border-color:transparent}
+.chap .tick.past{color:var(--t1)}
+@container (max-width:1100px){
+  .chap:not(.cur) .nm{display:none}
+  .chap:not(.cur) .no{display:inline}
+}
+@container (max-width:480px){
+  .chap.cur .nm{display:none}
+  .chap.cur .no{display:inline;margin-right:2px}
+}
+@media (max-width:760px){
+  .dock{padding:8px 10px}
+  .bubble p{font-size:13.5px}
+  .bubble .ch{font-size:11.5px}
+  .tl{flex-wrap:wrap}
+  .track{order:-1;flex:1 0 100%;gap:3px}
+  #cc{margin-left:auto}
+  .chap{padding:0 7px;font-size:11px}
+  .chap.cur{padding-left:8px}
+  .chap .ticks{margin:0 12px 0 10px}
+  .chap .tick{width:19px;height:19px;font-size:10px}
+}
+</style>
+<script>
+(function () {
+  // the map is drawn 1680px wide and its diagram is 1000px tall; it must also clear the timeline docked below it
+  function fit() {
+    var d = document.documentElement, dock = document.getElementById('dock');
+    var dh = dock ? dock.offsetHeight : 51;
+    d.style.setProperty('--map-zoom', Math.min(1, d.clientWidth / 1680, (innerHeight - dh - 8) / 1000));
+    document.body && (document.body.style.paddingBottom = dh + 'px');
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('DOMContentLoaded', fit);
+  window.__fitMap = fit;
+})();
+</script>
+</head>
+<body>
+<div class="map">
+  <div class="head">
+    <div class="eyebrow">System map</div>
+    <div class="brand"><img src="../favicon/favicon.svg" alt="Pombo"><h1>Pombo Protocol</h1></div>
+    <ul class="facts">
+      <li><span style="border-color:var(--streamr)"></span>Streamr carries messages peer to peer: each stream forms its own mesh, found through a shared DHT.</li>
+      <li><span style="border-color:var(--chain)"></span>Polygon Blockchain holds ownership and permissions; The Graph indexes them.</li>
+      <li><span style="border-top-style:dashed;border-color:var(--http)"></span>Storage providers are chosen per channel; stacking independent clusters adds layers of redundancy.</li>
+      <li><span style="border-top-style:dotted;border-color:var(--push)"></span>A relay server wakes devices without seeing content, sender or account.</li>
+    </ul>
+  </div>
+
+  <div class="picker" id="picker"><span>Channel</span></div>
+
+  <div class="canvas" id="canvas">
+    <svg class="layer" id="wires" width="1600" height="1000"></svg>
+
+    <div class="blk solid" data-node="polygon" style="left:460px;top:40px;width:560px;height:200px;padding:20px 22px;gap:14px">
+      <div class="row"><div class="h20">Polygon PoS</div><div class="kick" style="color:var(--chain)">Blockchain</div></div>
+      <div class="d14">Stream registry: ownership, permissions and metadata of every channel’s streams. Closed, Gated and Paid channels add a gate contract that decides who is in.</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:auto">
+        <div class="mini chain"><b>RPC node 1</b><span>public provider</span></div>
+        <div class="mini chain"><b>RPC node 2</b><span>fallback</span></div>
+        <div class="mini chain slot"><b>Custom RPC</b><span>user slot</span></div>
+      </div>
+    </div>
+
+    <div class="blk solid" data-node="graph" style="left:1100px;top:40px;width:460px;height:200px;padding:20px 22px;gap:14px">
+      <div class="row"><div class="h20">The Graph</div><div class="kick" style="color:var(--t3)">Indexer</div></div>
+      <div class="d14">The Streamr subgraph indexes stream and permission events on Polygon, so clients can query them without scanning the chain.</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:auto">
+        <div class="mini grey"><b>Graph node</b><span>Streamr subgraph</span></div>
+        <div class="mini grey slot"><b>Own API key</b><span>optional</span></div>
+      </div>
+    </div>
+
+    <div class="blk group" data-node="clients" style="left:40px;top:300px;width:300px;height:676px;padding:14px 20px;gap:10px">
+      <div class="cap" style="flex:none;height:16px;line-height:16px">Pombo clients</div>
+      <div id="cards" style="display:contents"></div>
+      <div class="keys">
+        <div class="row"><div class="kick" style="color:rgba(255,255,255,0.55)">On-device keys</div><div class="mono11" style="color:rgba(255,255,255,0.55)" id="cipher"></div></div>
+        <div id="krows" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <div class="blk" data-node="streamr" style="left:460px;top:300px;width:300px;min-height:640px;padding:18px 20px;gap:8px;background:rgba(255,92,0,0.06);border:1px solid rgba(255,92,0,0.3);border-radius:14px">
+      <div class="kick" style="color:var(--streamr)">Transport</div>
+      <div class="h20">Streamr Network</div>
+      <div class="d13" style="color:rgba(255,255,255,0.7)">Peer-to-peer pub/sub with no central server. Broadcast, not memory.</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+        <div class="kick" style="color:rgba(255,92,0,0.85)">Streams</div>
+        <div class="srow" data-stag="s1"><b>Messages <i>-1</i></b><p>stored by the channel’s providers</p><div class="pill"></div></div>
+        <div class="srow" data-stag="s2"><b>Ephemeral · interactions <i>-2 -5</i></b><p>presence and typing live only (-2); reactions stored (-5)</p><div class="pill"></div></div>
+        <div class="srow" data-stag="s3"><b>Admin <i>-3</i></b><p>moderation, channel image, password check · owner only</p><div class="pill"></div></div>
+        <div class="srow" data-stag="s4"><b>Keys <i>-4</i></b><p>announce, request, answer</p><div class="pill"></div></div>
+        <div class="srow" data-stag="dm"><b>DM inbox</b><p>anyone publishes, only the owner reads</p><div class="pill"></div></div>
+        <div class="srow" data-stag="push"><b>Push stream</b><p>anyone publishes, no public reads</p><div class="pill"></div></div>
+      </div>
+    </div>
+
+    <div class="blk group" data-node="storage" style="left:900px;top:300px;width:660px;height:400px;padding:18px 20px;gap:16px">
+      <div class="row"><div class="cap">Storage providers</div><div class="mono11" style="color:var(--t3)">chosen per channel by its owner</div></div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;flex:1">
+        <div class="solid" style="box-sizing:border-box;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
+          <div class="mono12" style="color:var(--t3)">Provider A</div>
+          <div class="h18">Pombo storage cluster</div>
+          <div class="d13">Operated by the project.<br>The default, not a requirement.</div>
+          <div class="nodes"><div class="cl">Cassandra cluster</div>
+            <div class="node"><b>Node 1</b><span>pombo-storage-node</span></div>
+            <div class="node"><b>Node 2</b><span>pombo-storage-node</span></div>
+          </div>
+        </div>
+        <div class="solid" style="box-sizing:border-box;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
+          <div class="mono12" style="color:var(--t3)">Provider B</div>
+          <div class="h18">Independent operator</div>
+          <div class="d13">Anyone can run pombo-storage-node.</div>
+          <div class="nodes"><div class="cl">Cassandra cluster</div>
+            <div class="node"><b>Node 1</b><span>pombo-storage-node</span></div>
+            <div class="node"><b>Node N</b><span>pombo-storage-node</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="feats"><div>ingest validation</div><div>signed reads</div><div>storedAt receipts</div><div>signed purge</div><div>TTL set by the owner</div></div>
+    </div>
+
+    <div class="blk solid" data-node="relay" style="left:900px;top:720px;width:400px;height:230px;padding:16px 20px;gap:8px">
+      <div class="row"><div class="h18">Push relay</div><div class="mono11" style="color:var(--t3)">pombo-push</div></div>
+      <div class="d13">Sees no content, sender or account, and subscribes to the push stream, closed to public reads. Registrations arrive over Streamr, encrypted to its public key. Wake signals carry a 1-byte tag and a proof-of-work; it fans out to every device under that tag.</div>
+      <div class="regs" id="regs"></div>
+    </div>
+
+    <div class="blk" data-node="pushsvc" style="left:1360px;top:760px;width:200px;height:180px;padding:18px 20px;gap:8px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.4);border-radius:10px">
+      <div class="h18">Push services</div>
+      <div class="d13">FCM for the Android app; Web Push through each browser’s service, Apple’s APNs on iPhone.</div>
+      <div class="mono11" style="margin-top:auto;color:var(--push)">carries no content</div>
+    </div>
+
+    <div id="labels"></div>
+    <svg class="layer dots" id="dots" width="1600" height="1000"></svg>
+  </div>
+</div>
+
+<div class="dock nocap" id="dock">
+  <div class="bubble" id="bubble"><div class="bh"><span class="n" id="capN"></span><span class="ch" id="capCh"></span></div><p id="capTx"></p><i class="tip"></i></div>
+  <div class="tl">
+    <button class="ctl main" id="play" aria-label="Play the story"></button>
+    <button class="ctl" id="prev" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h2v12H7zM20 6v12L10 12z"/></svg></button>
+    <button class="ctl" id="next" aria-label="Next step"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6v12l10-6z"/></svg></button>
+    <div class="track" id="track"></div>
+    <button class="ctl tog" id="cc" aria-pressed="false" aria-label="Captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 12h4M14 12h3M7 15.5h8"/></svg></button>
+    <button class="ctl tog spd" id="speed" aria-pressed="false" aria-label="Double speed">2×</button>
+    <button class="ctl stop" id="stop" aria-label="Back to the whole map"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></button>
+    <button class="ctl" id="fs" aria-label="Full screen" hidden></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var C = { stream: '#FF5C00', chain: '#8247E5', http: 'rgba(255,255,255,0.5)', push: '#60a5fa' };
+  var DASH = { stream: null, chain: null, http: '6 5', push: '1.5 5' };
+  var CARD_Y = [379, 465, 551, 637];
+  var EDGES = [
+    { id: 'cs', a: 'clients', b: 'streamr', k: 'stream', d: CARD_Y.map(function (y) { return 'M340 ' + y + 'H460'; }), x: 400, y: 422, t: 'pub / sub', both: true },
+    { id: 'sst', a: 'streamr', b: 'storage', k: 'stream', d: ['M760 500H900'], x: 830, y: 500, t: 'retains history' },
+    { id: 'sr', a: 'streamr', b: 'relay', k: 'stream', d: ['M760 820H900'], x: 830, y: 820, t: 'push stream' },
+    { id: 'rps', a: 'relay', b: 'pushsvc', k: 'push', d: ['M1300 850H1360'] },
+    { id: 'psc', a: 'pushsvc', b: 'clients', k: 'push', d: CARD_Y.map(function (y) { return 'M1460 940V984H20V' + y + 'H58'; }), x: 1000, y: 984, t: 'wake device · FCM / Web Push / APNs' },
+    { id: 'cp', a: 'clients', b: 'polygon', k: 'chain', d: ['M120 300V140H460'], x: 290, y: 140, t: 'RPC · read / write contracts', both: true },
+    { id: 'cg', a: 'clients', b: 'graph', k: 'http', d: ['M80 300V16H1330V40'], x: 700, y: 16, t: 'GraphQL queries' },
+    { id: 'pg', a: 'polygon', b: 'graph', k: 'chain', d: ['M1020 140H1100'], x: 1060, y: 112, t: 'indexes' },
+    { id: 'cst', a: 'clients', b: 'storage', k: 'http', d: ['M260 300V274H1060V300'], x: 600, y: 274, t: 'history reads · purge' },
+    { id: 'stp', a: 'storage', b: 'polygon', k: 'chain', d: ['M1400 300V254H900V240'], x: 1150, y: 254, t: 'node registry · permission checks' }
+  ];
+  var byId = {};
+  EDGES.forEach(function (e) { byId[e.id] = e; });
+  var NODES = ['clients', 'streamr', 'storage', 'relay', 'pushsvc', 'polygon', 'graph'];
+
+  var KC = { epoch: '#4ade80', publish: '#fbbf24', inter: '#f472b6', pw: '#22d3ee', ecdh: '#22d3ee', none: 'rgba(255,255,255,0.35)' };
+  var TC = { epoch: '#4ade80', publish: '#fbbf24', inter: '#f472b6', ecdh: '#22d3ee', none: 'rgba(255,255,255,0.45)' };
+  var TYPES = {
+    open: { label: 'Open', cipher: 'no encryption', wire: 'signed plaintext',
+      rows: [['none', 'No content key', 'Public room by design. Messages are signed, not encrypted.'], ['none', 'Author proof', 'Outside read-only channels, posts use a throwaway key and a signed proof naming the author.']],
+      tags: { s1: ['none', 'signed plaintext'], s2: ['none', 'plaintext'], s3: ['none', 'plaintext'], s4: ['none', 'not used', 1] } },
+    protected: { label: 'Protected', cipher: 'AES-256-GCM', wire: 'ciphertext',
+      rows: [['pw', 'Password key', 'PBKDF2-SHA256 from the shared password. Encrypts messages, reactions, presence and moderation.'], ['none', 'Local check', 'Tested against a public challenge; the password never touches the network.']],
+      tags: { s1: ['ecdh', 'password key'], s2: ['ecdh', 'password key'], s3: ['ecdh', 'password key'], s4: ['none', 'not used', 1] } },
+    gated: { label: 'Closed · Gated · Paid', cipher: 'AES-256-GCM', wire: 'ciphertext',
+      rows: [['epoch', 'Epoch key', 'Encrypts content. Versioned; rotates on removal or lost access, weekly, or with Rotate Now.'], ['publish', 'Shared publish key', 'Signs -1 in sealed channels. Owner and mods only if read-only.'], ['inter', 'Interactions key', 'Signs -2 and -5 in sealed channels. Every member, even those who cannot post.']],
+      tags: { s1: ['epoch', 'epoch + publish'], s2: ['epoch', 'epoch + interactions'], s3: ['epoch', 'epoch key'], s4: ['ecdh', 'sealed per member'] } },
+    dm: { label: 'Direct messages', cipher: 'AES-256-GCM', wire: 'sealed sender',
+      rows: [['ecdh', 'ECDH secp256k1', 'Fresh ephemeral key + recipient’s published key, then HKDF-SHA256.'], ['none', 'Sealed sender', 'Each message under a throwaway address; the author is inside the envelope.', 'sealed'], ['none', 'No ratchet', 'No forward secrecy; history recovers on a new device.', 'ratchet']],
+      tags: { s1: ['none', 'not used', 1], s2: ['none', 'not used', 1], s3: ['none', 'not used', 1], s4: ['none', 'not used', 1], dm: ['ecdh', 'ECDH + AES-256-GCM'] } }
+  };
+
+  var CLIENTS = [
+    { who: 'Alice', what: 'Web client', push: 'Web Push' },
+    { who: 'Bob', what: 'Android app', push: 'FCM push', tag: '0x75' },
+    { who: 'Charlie', what: 'Web client (PWA)', push: 'Web Push', tag: '0x3f' },
+    { who: 'Dave', what: 'iPhone (PWA)', push: 'Web Push via APNs', tag: '0x75' }
+  ];
+  var REGS = [['0x75', 'Bob’s phone'], ['0x75', 'Dave’s iPhone'], ['0x3f', 'Charlie’s PWA']];
+
+  // Step: [edge, text, motion, stretch, fx]. Motion: segment digits (0 Alice to 3 Dave on client links), 'r' reversed,
+  // ',' together, '>' in sequence. Stretch scales the travel time; fx marks cards and rows until the chapter ends.
+  var FIND = ['cg', 'Explore lists visible channels from the subgraph; hidden ones are shared by link.', null, 1.8];
+  var LOOKUP = ['cg', 'Charlie’s client looks up the channel’s streams and permissions in the subgraph.', null, 1.8];
+  var RESOLVE = ['cg', 'It resolves the channel’s storage nodes and their endpoints, both registered on chain.', null, 1.8];
+  var LIVE = [['cs', 'Charlie, online, receives it live. Bob’s phone is asleep.', '2r'],
+    ['sst', 'The channel’s storage nodes receive and retain it.'],
+    ['stp', 'Each node first checks the signature and the publish permission.']];
+  var ERASE = ['cst', 'Erase (irreversible): a signed purge goes to each provider, reported per provider.', null, 1.3];
+  function register(of) {
+    return { id: 'register', name: 'Push - Register', title: 'Bob’s phone registers for push', steps: [
+      ['cg', 'Bob’s phone reads the relay’s public key from the push stream’s metadata and checks it against the relay’s known address.', null, 1.8],
+      ['cs', 'It publishes one registration on the push stream, encrypted to the relay and sent under a throwaway key.', '1'],
+      ['sr', 'Only the relay can read it. It files the device under ' + of + ' 1-byte tag, 0x75, shared with unrelated channels.', null, null, { tags: ['Bob'], regs: [0] }]] };
+  }
+  function wake(checks, finds) {
+    return { id: 'wake', name: 'Push - Wake signal', title: 'Bob’s phone is woken', steps: [
+      ['sr', 'Alice’s client broadcasts a wake: the tag, a public/private flag and a proof-of-work.', null, null, { tags: ['Bob', 'Charlie', 'Dave'] }],
+      ['rps', 'The relay checks the proof-of-work and wakes every device under tag 0x75, about 1 in 256 registrations.', null, 1.6, { regs: [0, 1] }],
+      ['psc', 'FCM, APNs or Web Push deliver to all of them. None can tell which device is meant.', '1,3', 2.4, { cards: { Charlie: ['not woken', 'dim'] } }],
+      ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', null, 1.3],
+      [null, 'Bob’s phone ' + finds + ' Alice’s message and notifies him. Dave’s iPhone, woken for #News, stays silent. Charlie’s PWA, on another tag, never wakes.', null, null,
+        { cards: { Bob: ['notification', 'win'], Dave: ['nothing new', 'plain'] } }]] };
+  }
+  var REGISTER = register('the channel’s'), WAKE = wake('its channels', 'finds');
+  var STORIES = {
+    dm: { intro: 'Follow a direct message from Alice to Bob, from his inbox to its erasure.', chapters: [
+      { id: 'create', name: 'Create an inbox', title: 'Bob creates his DM inbox', steps: [
+        ['cp', 'Bob creates his DM inbox on Polygon: anyone may publish to it, only he may subscribe.'],
+        ['cp', 'His public key goes in the inbox’s on-chain description; its messages are stored for 180 days by default.']] },
+      register('the inbox’s'),
+      { id: 'find', name: 'Find the inbox', title: 'Alice finds Bob’s inbox', steps: [
+        ['cp', 'Alice’s client derives Bob’s inbox from his address, or his ENS name, and reads it from Polygon.'],
+        [null, 'The public key in its description must hash to Bob’s address, or Alice cannot send.', null, null, { cards: { Alice: ['key checked', 'win'] }, key: 'ecdh' }]] },
+      { id: 'send', name: 'Send a message', title: 'Alice sends Bob a DM', steps: [
+        [null, 'Alice encrypts to Bob’s public key with a key made for this message alone (ECDH, then AES-256-GCM).', null, null, { key: 'ecdh' }],
+        ['cs', 'She publishes it to his inbox under that key’s throwaway address. Her account’s signature rides inside, so only Bob learns it is her.', '0', null, { key: 'sealed' }],
+        ['sst', 'The inbox’s storage nodes receive and retain it. Bob’s phone is asleep.'],
+        ['stp', 'Each node checks the signature and the publish permission, which is public: any throwaway key passes.']] },
+      wake('its inbox and channels', 'opens the envelope, finds'),
+      { id: 'read', name: 'Read the inbox', title: 'Bob reads his inbox', steps: [
+        ['cst', 'Bob’s client reads his inbox from storage, signed as its owner.', null, 1.3],
+        [null, 'It decrypts with his account key and recovers the signer inside: Alice. No ratchet: a new device with his account reads whatever is still retained.', null, null,
+          { cards: { Bob: ['from Alice', 'win'] }, key: ['ecdh', 'ratchet'] }]] },
+      { id: 'moderate', name: 'Delete, block, erase', title: 'Delete, block and erase', steps: [
+        ['cs', 'Delete: Alice sends a sealed delete for her message; Bob’s client honours it only from its author.', '0'],
+        ['cs', 'Block: Bob’s block list syncs to his other devices. Blocked messages still arrive and are stored, then dropped.', '1'],
+        ['cst', 'Erase: Bob purges a message from his inbox’s storage, signed as its owner. None of this touches the chain.', null, 1.3]] }] },
+    open: { intro: 'Follow an open channel from its creation to its moderation.', chapters: [
+      { id: 'create', name: 'Create a channel', title: 'Bob creates an open channel', steps: [
+        ['cp', 'Bob registers the channel’s streams on Polygon, with public permissions and their storage. There is no gate contract.'],
+        ['pg', 'The Graph indexes the new streams and permissions.'],
+        FIND] },
+      { id: 'keys', name: 'No channel keys', title: 'No keys to get', steps: [
+        [null, 'Open channels have no content key: messages are signed, not encrypted, so anyone can read them.', null, null, { key: 'none' }]] },
+      { id: 'open', name: 'Open a channel', title: 'Charlie opens the channel', steps: [
+        LOOKUP,
+        RESOLVE,
+        ['cst', 'It reads the history from the storage nodes, unsigned, and checks each message’s signature and publish permission.', null, 1.3]] },
+      REGISTER,
+      { id: 'send', name: 'Send a message', title: 'Alice sends a message', steps: [
+        ['cs', 'Alice publishes under a throwaway key, with a proof signed by her account that names her. Nothing is encrypted.', '0']].concat(LIVE) },
+      WAKE,
+      { id: 'moderate', name: 'Moderation', title: 'Bob bans a member', steps: [
+        ['cs', 'Hide: Bob publishes a new moderation snapshot on the admin stream (-3), listing the banned address.', '1'],
+        ['sst', 'It is stored and read back. Pombo clients hide the member, but with no gate the address can still post.'],
+        ERASE] }] },
+    protected: { intro: 'Follow a password-protected channel from its creation to its moderation.', chapters: [
+      { id: 'create', name: 'Create a channel', title: 'Bob creates a protected channel', steps: [
+        ['cp', 'Bob registers the channel’s streams on Polygon, with public permissions and their storage. No gate contract: the password is the lock.'],
+        ['pg', 'The Graph indexes the new streams and permissions.'],
+        ['cs', 'Bob publishes a password challenge on the admin stream (-3): data only the right password decrypts.', '1'],
+        ['sst', 'It is stored, and republished until storage keeps it.'],
+        FIND] },
+      { id: 'keys', name: 'Check the password', title: 'Charlie joins with the password', steps: [
+        ['cst', 'Charlie’s client reads the password challenge from storage.', null, 1.3],
+        [null, 'It derives the key from the password (PBKDF2-SHA256) and decrypts the challenge on the device. The password never leaves it, and no key is exchanged.', null, null,
+          { cards: { Charlie: ['password ok', 'win'] }, key: 'pw' }]] },
+      { id: 'open', name: 'Open a channel', title: 'Charlie opens the channel', steps: [
+        LOOKUP,
+        RESOLVE,
+        ['cst', 'It reads the history from the storage nodes, unsigned, then checks and decrypts each message with the password key.', null, 1.3]] },
+      REGISTER,
+      { id: 'send', name: 'Send a message', title: 'Alice sends a message', steps: [
+        ['cs', 'Alice publishes to the channel stream, encrypted with the password key on her device.', '0']].concat(LIVE) },
+      WAKE,
+      { id: 'moderate', name: 'Moderation', title: 'Bob bans a member', steps: [
+        ['cs', 'Hide: Bob publishes a new moderation snapshot on the admin stream (-3), listing the banned address.', '1'],
+        ['sst', 'It is stored and read back. Pombo clients hide the member, but anyone with the password can still read and post.'],
+        ERASE] }] },
+    gated: { intro: 'Follow a gated channel from its creation to its moderation.', chapters: [
+      { id: 'create', name: 'Create a channel', title: 'Bob creates a gated channel', steps: [
+        ['cp', 'Bob registers the channel’s streams on Polygon, with their permissions and storage. A gated channel also gets its own gate contract.'],
+        ['pg', 'The Graph indexes the new streams and permissions.'],
+        FIND] },
+      { id: 'keys', name: 'Get channel keys', title: 'Charlie gets the keys', steps: [
+        ['cp', 'The gate contract admits Charlie: allowlist, token, NFT or subscription.'],
+        ['cs', 'Charlie posts a key request on the keys stream (-4), with a throwaway public key and his account’s public key.', '2'],
+        ['sst', 'The request is stored, so it waits even if no member is online.'],
+        ['cs', 'Bob’s client answers, sealing the key to Charlie. Answerers rank themselves so they don’t all reply.', '1>2r', 1.4],
+        [null, 'Charlie accepts the key only if it matches Bob’s announced hash, and gets every epoch still retained.', null, null,
+          { cards: { Charlie: ['key verified', 'win'] }, key: 'epoch' }]] },
+      { id: 'open', name: 'Open a channel', title: 'Charlie opens the channel', steps: [
+        LOOKUP,
+        ['cp', 'It reads membership from the gate contract.'],
+        RESOLVE,
+        ['cst', 'It fetches the history from the storage nodes, signed as a member, and decrypts it.', null, 1.3]] },
+      REGISTER,
+      { id: 'send', name: 'Send a message', title: 'Alice sends a message', steps: [
+        ['cs', 'Alice publishes to the channel stream, encrypted on her device.', '0']].concat(LIVE) },
+      WAKE,
+      { id: 'moderate', name: 'Moderation', title: 'Bob bans a member', steps: [
+        ['cs', 'Hide: Bob publishes a new moderation snapshot on the admin stream (-3); a moderator would send a signed delta instead.', '1'],
+        ['sst', 'It is stored, read back and republished if missing. Every Pombo client stops showing the member.'],
+        ['cp', 'Cut access (owner only): one transaction on the gate contract, and it answers no for that address.'],
+        ['stp', 'At ingest, nodes ask the gate: in visible channels the member’s writes stop within the cache window; sealed ones need both key resets.'],
+        ['cs', 'Bob’s client rotates the epoch key at once, holding his sends until it lands. No member answers the banned address.', '1'],
+        ERASE] }] }
+  };
+
+  var TRAVEL = 1.6, REST = 1.2;
+  var total = 0, chapters = [];
+  function timeChapters(story) {
+    total = 0;
+    chapters = story.map(function (ch, ci) {
+      var start = total, t = start;
+      var steps = ch.steps.map(function (s) {
+        var travel = s[0] ? TRAVEL * (s[3] || 1) : 0;
+        var read = Math.min(8, Math.max(2.4, s[1].split(/\s+/).length * 0.27));
+        var st = { edge: s[0], text: s[1], motion: s[2], fx: s[4], travel: travel, start: t, dur: Math.max(travel + 0.4, read) };
+        t += st.dur;
+        return st;
+      });
+      total = t + REST;
+      return { id: ch.id, name: ch.name, title: ch.title, index: ci, steps: steps, start: start, end: total };
+    });
+  }
+
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var state = { t: 0, playing: false, active: false, hover: null, type: 'gated', story: null, ci: -1, si: -1, speed: 1 };
+  var $ = function (s) { return document.querySelector(s); };
+  var NS = 'http://www.w3.org/2000/svg';
+  function svg(tag, attrs) { var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+
+  // ---- diagram: wires, labels, blocks ----
+  var wires = $('#wires'), pathEls = {};
+  var defs = svg('defs', {});
+  Object.keys(C).forEach(function (k) {
+    var m = svg('marker', { id: 'arr-' + k, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' });
+    m.appendChild(svg('path', { d: 'M0 0L10 5L0 10z', fill: C[k] }));
+    defs.appendChild(m);
+  });
+  wires.appendChild(defs);
+  EDGES.forEach(function (ed) {
+    pathEls[ed.id] = ed.d.map(function (d) {
+      var p = svg('path', { d: d, fill: 'none', stroke: C[ed.k], 'stroke-width': 1.75, 'stroke-linecap': 'round', 'marker-end': 'url(#arr-' + ed.k + ')' });
+      if (DASH[ed.k]) p.setAttribute('stroke-dasharray', DASH[ed.k]);
+      if (ed.both) p.setAttribute('marker-start', 'url(#arr-' + ed.k + ')');
+      p.style.transition = 'opacity .2s, stroke-width .2s';
+      wires.appendChild(p);
+      return p;
+    });
+  });
+  var labelEls = {};
+  EDGES.forEach(function (ed) {
+    if (!ed.t) return;
+    var el = document.createElement('div');
+    el.className = 'lbl';
+    el.style.left = ed.x + 'px'; el.style.top = ed.y + 'px';
+    el.style.borderColor = C[ed.k]; el.style.color = C[ed.k];
+    el.innerHTML = '<span class="st" style="background:' + C[ed.k] + '"></span><span class="tx"></span><span class="sub"></span>';
+    el.querySelector('.tx').textContent = ed.t;
+    $('#labels').appendChild(el);
+    labelEls[ed.id] = el;
+  });
+  var nodeEls = {};
+  document.querySelectorAll('[data-node]').forEach(function (el) {
+    var n = el.getAttribute('data-node');
+    nodeEls[n] = el;
+    el.addEventListener('mouseenter', function () { if (!state.active) { state.hover = n; highlight(); } });
+    el.addEventListener('mouseleave', function () { if (state.hover === n) { state.hover = null; highlight(); } });
+  });
+
+  // ---- clients, relay registrations ----
+  var cards = CLIENTS.map(function (c) {
+    var el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = '<div class="top"><span class="who"></span><span class="out"></span></div><div class="what"></div><div class="push"></div>';
+    el.querySelector('.what').textContent = c.what;
+    el.querySelector('.push').textContent = c.push;
+    $('#cards').appendChild(el);
+    return el;
+  });
+  var regEls = REGS.map(function (r) {
+    var tg = document.createElement('div'); tg.className = 'tg'; tg.textContent = r[0];
+    var who = document.createElement('div'); who.className = 'who'; who.textContent = r[1];
+    $('#regs').appendChild(tg); $('#regs').appendChild(who);
+    return tg;
+  });
+
+  // ---- channel type ----
+  Object.keys(TYPES).forEach(function (k) {
+    var b = document.createElement('button');
+    b.className = 'chip'; b.textContent = TYPES[k].label; b.setAttribute('data-type', k);
+    b.addEventListener('click', function () { setType(k); });
+    $('#picker').appendChild(b);
+  });
+  function setType(k) {
+    state.type = k;
+    var ct = TYPES[k];
+    document.querySelectorAll('#picker .chip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-type') === k); });
+    $('#cipher').textContent = ct.cipher;
+    $('#krows').innerHTML = '';
+    ct.rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'krow';
+      row.setAttribute('data-k', r[3] || r[0]);
+      row.innerHTML = '<i style="background:' + KC[r[0]] + '"></i><div><b></b><span></span></div>';
+      row.querySelector('b').textContent = r[1];
+      row.querySelector('span').textContent = r[2];
+      $('#krows').appendChild(row);
+    });
+    document.querySelectorAll('.srow').forEach(function (row) {
+      var k2 = row.getAttribute('data-stag');
+      var t = k2 === 'push' ? ['none', 'tag + PoW · sealed reg.'] : (ct.tags[k2] || ['none', 'n/a', 1]);
+      var pill = row.querySelector('.pill');
+      pill.textContent = t[1];
+      pill.style.color = pill.style.borderColor = TC[t[0]];
+      row.style.opacity = t[2] ? 0.45 : 1;
+    });
+    labelEls.cs.querySelector('.sub').textContent = ct.wire;
+    labelEls.sst.querySelector('.tx').textContent = 'stores';
+    labelEls.sst.querySelector('.sub').textContent = ct.wire === 'signed plaintext' ? 'plaintext' : 'ciphertext';
+    if (STORIES[k] && k !== state.story) { state.story = k; buildTimeline(); stop(); }
+    else if (!STORIES[k] && state.active) stop();
+    else effects();
+  }
+
+  // ---- what is lit ----
+  function segsOf(st) { return st.motion ? st.motion.match(/\d+/g).map(Number) : byId[st.edge].d.map(function (_, i) { return i; }); }
+  function highlight() {
+    var edges = null, used = {}, marks = {}, current = null;
+    var ch = state.active ? chapters[state.ci] : null;
+    if (ch) {
+      edges = {};
+      ch.steps.forEach(function (st, i) {
+        if (!st.edge) return;
+        edges[st.edge] = true;
+        (marks[st.edge] = marks[st.edge] || []).push(i + 1);
+        var u = used[st.edge] = used[st.edge] || {};
+        segsOf(st).forEach(function (s) { u[s] = true; });
+      });
+      current = ch.steps[state.si] && ch.steps[state.si].edge;
+    } else if (state.hover) {
+      edges = {};
+      EDGES.forEach(function (e) { if (e.a === state.hover || e.b === state.hover) edges[e.id] = true; });
+    }
+    var lit = {};
+    EDGES.forEach(function (ed) {
+      var on = !edges || edges[ed.id];
+      if (edges && on) { lit[ed.a] = lit[ed.b] = true; }
+      pathEls[ed.id].forEach(function (p, i) {
+        var op = !edges ? 1 : on ? (used[ed.id] && !used[ed.id][i] ? 0.15 : 1) : 0.1;
+        p.style.opacity = op;
+        p.setAttribute('stroke-width', ed.id === current ? 3 : edges && on ? 2.4 : 1.75);
+      });
+      var lb = labelEls[ed.id];
+      if (lb) {
+        lb.style.opacity = !edges || on ? 1 : 0.1;
+        lb.querySelector('.st').textContent = marks[ed.id] ? marks[ed.id].join(' · ') : '';
+      }
+    });
+    if (state.hover) lit[state.hover] = true;
+    if (ch) lit.clients = true;
+    NODES.forEach(function (n) { nodeEls[n].style.opacity = !edges ? 1 : lit[n] ? 1 : 0.3; });
+  }
+  var OUT = { win: '#4ade80', dim: 'rgba(255,255,255,0.5)', plain: 'rgba(255,255,255,0.7)' };
+  function effects() {
+    var ch = state.active ? chapters[state.ci] : null, tags = {}, outs = {}, regs = {}, key = [];
+    if (ch) ch.steps.slice(0, state.si + 1).forEach(function (st) {
+      var f = st.fx || {};
+      (f.tags || []).forEach(function (w) { tags[w] = true; });
+      for (var w in f.cards) outs[w] = f.cards[w];
+      (f.regs || []).forEach(function (i) { regs[i] = true; });
+      if (f.key) key = [].concat(f.key);
+    });
+    CLIENTS.forEach(function (c, i) {
+      var el = cards[i], out = el.querySelector('.out'), o = outs[c.who];
+      el.querySelector('.who').textContent = c.tag && tags[c.who] ? c.who + ' · ' + c.tag : c.who;
+      out.textContent = o ? o[0] : '';
+      out.style.color = o ? OUT[o[1]] : '';
+      out.style.opacity = o ? 1 : 0;
+      el.style.opacity = o && o[1] === 'dim' ? 0.45 : 1;
+      el.style.borderColor = o && o[1] === 'win' ? '#4ade80' : '';
+    });
+    regEls.forEach(function (el, i) { el.classList.toggle('hit', !!regs[i]); });
+    document.querySelectorAll('#krows .krow').forEach(function (r) { r.classList.toggle('lit', key.indexOf(r.getAttribute('data-k')) >= 0); });
+  }
+
+  // ---- dots ----
+  var dotLayer = $('#dots'), dotPool = [];
+  function dot(i, color) {
+    var g = dotPool[i];
+    if (!g) {
+      g = svg('g', {});
+      g.appendChild(svg('circle', { r: 16, opacity: 0.22 }));
+      g.appendChild(svg('circle', { r: 7, stroke: '#09090b', 'stroke-width': 1.5 }));
+      g.appendChild(svg('circle', { r: 2.5, fill: '#ffffff' }));
+      dotLayer.appendChild(g);
+      dotPool[i] = g;
+    }
+    g.children[0].setAttribute('fill', color);
+    g.children[1].setAttribute('fill', color);
+    return g;
+  }
+  function drawDots() {
+    var n = 0;
+    var ch = state.active ? chapters[state.ci] : null, st = ch && ch.steps[state.si];
+    if (st && st.edge && !reduced) {
+      var local = state.t - st.start, ed = byId[st.edge];
+      var legs = (st.motion || ed.d.map(function (_, i) { return String(i); }).join(',')).split('>').map(function (l) { return l.split(','); });
+      var legDur = st.travel / legs.length;
+      legs.forEach(function (leg, j) {
+        var p = (local - j * legDur) / legDur;
+        if (p < 0 || p > 1) return;
+        leg.forEach(function (seg) {
+          var path = pathEls[st.edge][parseInt(seg, 10)], len = path.getTotalLength();
+          var pt = path.getPointAtLength(len * (seg.charAt(seg.length - 1) === 'r' ? 1 - p : p));
+          var g = dot(n++, C[ed.k]);
+          g.setAttribute('transform', 'translate(' + pt.x + ' ' + pt.y + ')');
+          g.style.opacity = Math.min(1, p / 0.08, (1 - p) / 0.12);
+          g.style.display = '';
+        });
+      });
+    }
+    for (var i = n; i < dotPool.length; i++) dotPool[i].style.display = 'none';
+  }
+
+  // ---- timeline ----
+  var track = $('#track'), chapEls = [];
+  function buildTimeline() {
+    timeChapters(STORIES[state.story].chapters);
+    track.innerHTML = '';
+    chapEls = chapters.map(chapterEl);
+  }
+  function chapterEl(ch) {
+    var el = document.createElement('div');
+    el.className = 'chap';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', 'Chapter ' + (ch.index + 1) + ': ' + ch.name);
+    el.innerHTML = '<div class="fill"></div><span class="no">' + (ch.index + 1) + '</span><span class="nm"></span><div class="ticks"></div>';
+    el.querySelector('.nm').textContent = ch.name;
+    var ticks = el.querySelector('.ticks');
+    ch.steps.forEach(function (st, i) {
+      var b = document.createElement('button');
+      b.className = 'tick';
+      b.textContent = i + 1;
+      b.setAttribute('aria-label', 'Step ' + (i + 1));
+      b.style.left = ((i + 0.5) / ch.steps.length * 100) + '%';
+      b.addEventListener('click', function (e) { e.stopPropagation(); seek(st.start + 0.001); });
+      ticks.appendChild(b);
+    });
+    el.addEventListener('click', function (e) {
+      if (state.active && state.ci === ch.index) {
+        var r = ticks.getBoundingClientRect(), n = ch.steps.length;
+        var pos = Math.max(0, Math.min(0.9999, (e.clientX - r.left) / r.width)) * n, st = ch.steps[Math.floor(pos)];
+        seek(st.start + (pos - Math.floor(pos)) * st.dur);
+        return;
+      }
+      if (!state.active) { activate(); }
+      seek(ch.start + 0.001);
+      if (!state.playing) play();
+    });
+    el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+    track.appendChild(el);
+    return el;
+  }
+  function dockChapters() {
+    var cur = state.active ? state.ci : 0;
+    chapEls.forEach(function (el, i) {
+      el.classList.toggle('cur', i === cur);
+      el.classList.toggle('done', state.active && i < state.ci);
+      el.querySelector('.ticks').style.display = i === cur ? '' : 'none';
+    });
+  }
+  function progress() {
+    chapEls.forEach(function (el, i) {
+      var fill = el.querySelector('.fill');
+      if (!state.active || i !== state.ci) {
+        fill.style.width = '0';
+        el.querySelectorAll('.tick').forEach(function (b) { b.classList.remove('on', 'past'); b.style.background = ''; });
+        return;
+      }
+      var ch = chapters[i], ticks = el.querySelector('.ticks'), cur = ch.steps[state.si];
+      var f = Math.max(0, Math.min(1, (state.t - cur.start) / cur.dur));
+      fill.style.width = (ticks.offsetLeft + (state.si + f) / ch.steps.length * ticks.offsetWidth) + 'px';
+      ticks.querySelectorAll('.tick').forEach(function (b, j) {
+        var on = j === state.si;
+        b.classList.toggle('on', on);
+        b.classList.toggle('past', j < state.si);
+        var st = ch.steps[j];
+        b.style.background = on ? (st.edge ? C[byId[st.edge].k] : '#f0f0f0') : '';
+      });
+    });
+  }
+  function caption() {
+    var n = $('#capN'), chEl = $('#capCh'), tx = $('#capTx');
+    if (!state.active) {
+      n.textContent = ''; chEl.textContent = 'Seven chapters';
+      tx.textContent = STORIES[state.story].intro + ' Press play, or pick a chapter.';
+      return;
+    }
+    var ch = chapters[state.ci], st = ch.steps[state.si];
+    n.textContent = state.si + 1;
+    n.style.background = st.edge ? C[byId[st.edge].k] : '#f0f0f0';
+    chEl.textContent = ch.title;
+    tx.textContent = st.text;
+  }
+  function placeBubble() {
+    var b = $('#bubble'), anchor = state.active && state.ci >= 0 && chapEls[state.ci].querySelectorAll('.tick')[state.si];
+    if (!anchor || !anchor.offsetWidth) anchor = $('#play');
+    var r = anchor.getBoundingClientRect(), x = r.left + r.width / 2, w = b.offsetWidth;
+    var left = Math.max(10, Math.min(document.documentElement.clientWidth - w - 10, x - w / 2));
+    b.style.left = left + 'px';
+    b.style.setProperty('--tip', Math.max(16, Math.min(w - 16, x - left)) + 'px');
+  }
+  function locate(t) {
+    for (var i = 0; i < chapters.length; i++) {
+      var ch = chapters[i];
+      if (t < ch.end || i === chapters.length - 1) {
+        var si = ch.steps.length - 1;
+        for (var j = 0; j < ch.steps.length; j++) { if (t < ch.steps[j].start + ch.steps[j].dur) { si = j; break; } }
+        return [i, si];
+      }
+    }
+  }
+  function render(force) {
+    if (state.active) {
+      var at = locate(state.t);
+      if (force || at[0] !== state.ci || at[1] !== state.si) {
+        var newChapter = at[0] !== state.ci;
+        state.ci = at[0]; state.si = at[1];
+        if (newChapter) dockChapters();
+        highlight(); effects(); caption();
+      }
+    }
+    drawDots();
+    progress();
+    placeBubble();
+  }
+
+  var raf = 0, last = 0;
+  var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+  function controls() {
+    $('#play').innerHTML = state.playing ? PAUSE : PLAY;
+    $('#play').setAttribute('aria-label', state.playing ? 'Pause' : 'Play the story');
+  }
+  function frame(now) {
+    var dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+    last = now;
+    state.t = Math.min(total, state.t + dt * state.speed);
+    render();
+    if (state.t >= total) { pause(); return; }
+    raf = requestAnimationFrame(frame);
+  }
+  function activate() {
+    state.active = true; state.hover = null; state.ci = -1; state.si = -1;
+    if (!STORIES[state.type]) setType(state.story);
+    toCanvas();
+  }
+  function toCanvas() {
+    var c = $('#canvas').getBoundingClientRect();
+    scrollTo({ top: Math.max(0, scrollY + c.top - 8), behavior: reduced ? 'auto' : 'smooth' });
+  }
+  function play() {
+    if (!state.active) { activate(); state.t = 0; }
+    if (state.t >= total) state.t = 0;
+    state.playing = true; last = 0;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(frame);
+    controls();
+    render(true);
+  }
+  function pause() { state.playing = false; cancelAnimationFrame(raf); controls(); }
+  function seek(t) {
+    if (!state.active) activate();
+    state.t = Math.max(0, Math.min(total, t));
+    last = 0;
+    render(true);
+  }
+  function stop() {
+    pause();
+    state.active = false; state.t = 0; state.ci = -1; state.si = -1;
+    dockChapters(); highlight(); effects(); caption(); drawDots(); progress(); placeBubble();
+  }
+  function stepTo(dir) {
+    var all = [];
+    chapters.forEach(function (ch) { ch.steps.forEach(function (st) { all.push(st.start); }); });
+    if (!state.active) { seek(0.001); return; }
+    var cur = 0;
+    for (var i = 0; i < all.length; i++) if (all[i] <= state.t + 0.002) cur = i;
+    var target = Math.max(0, Math.min(all.length - 1, cur + dir));
+    seek(all[target] + 0.001);
+  }
+  $('#play').addEventListener('click', function () { state.playing ? pause() : play(); });
+  $('#prev').addEventListener('click', function () { stepTo(-1); });
+  $('#next').addEventListener('click', function () { stepTo(1); });
+  $('#stop').addEventListener('click', stop);
+  track.addEventListener('transitionend', placeBubble);
+  addEventListener('resize', placeBubble);
+  $('#speed').addEventListener('click', function () {
+    state.speed = state.speed === 1 ? 2 : 1;
+    this.setAttribute('aria-pressed', state.speed === 2 ? 'true' : 'false');
+  });
+  $('#cc').addEventListener('click', function () {
+    var off = $('#dock').classList.toggle('nocap');
+    this.setAttribute('aria-pressed', off ? 'false' : 'true');
+  });
+
+  var root = document.documentElement;
+  var EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+  var SHRINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+  function fsOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function onFullscreen() {
+    var on = fsOn();
+    root.classList.toggle('fs', on);
+    $('#fs').innerHTML = on ? SHRINK : EXPAND;
+    $('#fs').setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+    if (window.__fitMap) window.__fitMap();
+    if (on) scrollTo(0, 0); else if (state.active) toCanvas();
+    placeBubble();
+  }
+  if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+    $('#fs').innerHTML = EXPAND;
+    $('#fs').hidden = false;
+    $('#fs').addEventListener('click', function () {
+      var r = fsOn() ? (document.exitFullscreen || document.webkitExitFullscreen).call(document)
+        : (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+      if (r && r.catch) r.catch(function () {});
+    });
+    document.addEventListener('fullscreenchange', onFullscreen);
+    document.addEventListener('webkitfullscreenchange', onFullscreen);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
+    if (e.key === ' ') { e.preventDefault(); state.playing ? pause() : play(); }
+    else if (e.key === 'ArrowRight' && state.active) { e.preventDefault(); stepTo(1); }
+    else if (e.key === 'ArrowLeft' && state.active) { e.preventDefault(); stepTo(-1); }
+  });
+
+  setType('gated');
+  if (window.__fitMap) window.__fitMap();
+})();
+</script>
+</body></html>
