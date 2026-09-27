@@ -242,6 +242,7 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .a-q span{font-size:13px}
 .tram{background:#2b6cb0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect y='30' width='40' height='10' fill='%231f2937'/%3E%3Cpath d='M14 6h12M20 6v4' stroke='%23e5e7eb' stroke-width='1.2'/%3E%3Crect x='9' y='10' width='22' height='18' rx='3' fill='%23f5c518'/%3E%3Crect x='11' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='17.5' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='24' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='9' y='22' width='22' height='2' fill='%23b91c1c'/%3E%3Ccircle cx='14' cy='29' r='2' fill='%23111'/%3E%3Ccircle cx='26' cy='29' r='2' fill='%23111'/%3E%3C/svg%3E") center/100% no-repeat}
 .tree{background:#123d2a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 7l9 12h-5l6 8H10l6-8h-5z' fill='%2334d399'/%3E%3Crect x='18.5' y='27' width='3' height='6' fill='%238b5a2b'/%3E%3C/svg%3E") center/100% no-repeat}
+.market{background:#111c33 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M5 14h30M5 22h30M5 30h30' stroke='%23ffffff' stroke-opacity='.08'/%3E%3Cpath d='M10 17v12M24 17v10' stroke='%23f87171' stroke-width='1.2'/%3E%3Cpath d='M17 14v12M31 8v13' stroke='%234ade80' stroke-width='1.2'/%3E%3Crect x='8' y='20' width='4' height='7' rx='.6' fill='%23f87171'/%3E%3Crect x='15' y='16' width='4' height='7' rx='.6' fill='%234ade80'/%3E%3Crect x='22' y='19' width='4' height='5' rx='.6' fill='%23f87171'/%3E%3Crect x='29' y='10' width='4' height='8' rx='.6' fill='%234ade80'/%3E%3C/svg%3E") center/100% no-repeat}
 .fl{display:flex;align-items:center;gap:10px;padding:5px 0 3px;min-width:210px}
 .fl-ic{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.07);display:grid;place-items:center;color:rgba(255,255,255,.75);flex:none}
 .fl-ic svg{width:18px;height:18px}
@@ -259,8 +260,9 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .w-rp-p.mine{background:rgba(246,133,27,.15)}
 .w-typing{display:flex;align-items:center;gap:8px;padding:0 30px;font-size:13px;color:rgba(255,255,255,.35);visibility:hidden}
 .w-typing.on{visibility:visible}
-.w-comp{display:flex;align-items:center;gap:12px;padding:12px 16px 16px;background:#0b0b0e;border-top:1px solid rgba(255,255,255,.04)}
-.w-comp>svg{width:22px;height:22px;color:rgba(255,255,255,.55);flex:none}
+.w-comp{display:flex;align-items:center;gap:8px;padding:12px 12px 16px;background:#0b0b0e;border-top:1px solid rgba(255,255,255,.04)}
+.w-comp>i{width:36px;height:36px;display:grid;place-items:center;flex:none;color:rgba(255,255,255,.3)}
+.w-comp>i svg{width:24px;height:24px}
 .w-field{flex:1;min-width:0;height:44px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;font-size:15px;color:rgba(255,255,255,.25);white-space:nowrap;overflow:hidden}
 .w-field.on{color:rgba(255,255,255,.9)}
 .w-send{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#FF5C00;flex:none;transition:background .2s}
@@ -326,8 +328,10 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .a-typing{height:24px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:13px;color:rgba(255,255,255,.4);visibility:hidden}
 .a-typing .dots{color:var(--acc)}
 .a-typing.on{visibility:visible}
-.a-comp{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px 10px;background:#000;border-top:1px solid rgba(255,255,255,.04)}
-.a-comp>svg{width:22px;height:22px;color:rgba(255,255,255,.45);flex:none}
+.a-comp{flex:none;display:flex;align-items:center;padding:8px 12px 10px;background:#000;border-top:1px solid rgba(255,255,255,.04)}
+.a-comp>i{width:38px;height:38px;display:grid;place-items:center;flex:none;color:rgba(255,255,255,.45)}
+.a-comp>i svg{width:20px;height:20px}
+.a-comp .a-send{margin-left:8px}
 .a-field{flex:1;min-width:0;height:44px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px;font-size:15px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden}
 .a-field.on{color:#E4E4E7;border-color:rgba(255,255,255,.16)}
 .a-send{width:36px;height:36px;display:grid;place-items:center;color:var(--acc);flex:none;border-radius:50%;transition:background .2s}
@@ -728,7 +732,7 @@ section[id]{scroll-margin-top:40px}
               <div class="w-tabs"><span class="on">ALL</span><span>PERSONAL</span><span>COMMUNITIES</span></div>
               <div class="w-rows">
                 <div class="w-row on"><span class="av tram"></span><div class="w-rt"><div class="w-rn">Lisbon News</div><div class="w-rp js-last">Rui: taxi drivers are not going to love this</div></div></div>
-                <div class="w-row"><span class="av" data-av="a"></span><div class="w-rt"><div class="w-rn">Market.News</div><div class="w-rp">Rui: CPI came in hot</div></div><span class="w-badge">3</span></div>
+                <div class="w-row"><span class="av market"></span><div class="w-rt"><div class="w-rn">Market.News</div><div class="w-rp">Rui: CPI came in hot</div></div><span class="w-badge">3</span></div>
                 <div class="w-row"><span class="av tree"></span><div class="w-rt"><div class="w-rn">Green DAO</div><div class="w-rp">Luna: voted yes 🌱</div></div></div>
                 <div class="w-row"><span class="av" data-av="kenji"></span><div class="w-rt"><div class="w-rn">kenji.eth</div><div class="w-rp">see you on sunday</div></div></div>
                 <div class="w-row"><span class="av forge"></span><div class="w-rt"><div class="w-rn">PC Gaming</div><div class="w-rp">You: turn off the waterfall shader</div></div><span class="w-badge">12</span></div>
@@ -766,7 +770,7 @@ section[id]{scroll-margin-top:40px}
           <div class="a-list js-list"></div>
           <div class="a-typing js-typing"><span class="dots"><i></i><i></i><i></i></span><span><span class="js-who"></span> is typing</span></div>
         </div>
-        <div class="a-comp"><i data-ic="attach"></i><i data-ic="smile"></i><div class="a-field js-field">Message…</div><span class="a-send js-send" data-ic="send"></span></div>
+        <div class="a-comp"><i data-ic="attach"></i><i data-ic="mood"></i><div class="a-field js-field">Message…</div><span class="a-send js-send" data-ic="send"></span></div>
         <div class="a-gest"><i></i></div>
       </div></div>
     </div>
@@ -828,7 +832,7 @@ section[id]{scroll-margin-top:40px}
         <div class="a-hr"><i data-ic="kebab"></i></div>
       </div>
       <div class="a-body"><div class="a-list js-list"></div></div>
-      <div class="a-comp"><i data-ic="attach"></i><i data-ic="smile"></i><div class="a-field">Message…</div><span class="a-send" data-ic="send"></span></div>
+      <div class="a-comp"><i data-ic="attach"></i><i data-ic="mood"></i><div class="a-field">Message…</div><span class="a-send" data-ic="send"></span></div>
     </div>
   </div>
 </section>
@@ -994,7 +998,8 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
     pin:'<svg '+F+'><path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>',
     clip:'<svg '+O+'><path d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/></svg>',
     attach:'<svg '+F+'><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>',
-    smile:'<svg '+O+'><path d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75h.008M14.25 9.75h.008" stroke-width="1.8"/></svg>',
+    smile:'<svg '+O+'><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="1.5"/></svg>',
+    mood:'<svg '+F+'><circle cx="15.5" cy="9.5" r="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-4c-1.48 0-2.75-.81-3.45-2H6.88c.8 2.05 2.79 3.5 5.12 3.5s4.32-1.45 5.12-3.5h-1.67c-.7 1.19-1.97 2-3.45 2z"/></svg>',
     send:'<svg '+O+'><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>',
     back:'<svg '+F+'><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>',
     kebab:'<svg '+F+'><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
@@ -1276,7 +1281,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
     + '<div class="a-tabs"><span class="on">ALL</span><span>PERSONAL</span><span>COMMUNITIES</span></div>'
     + '<div class="a-rows">'
     + '<div class="a-row"><span class="av tram"></span><div><b>Lisbon News</b><span>Rui: taxi drivers are not going to love this</span></div><em>2</em></div>'
-    + '<div class="a-row"><span class="av" data-av="kenji"></span><div><b>kenji.eth</b><span>your pack broke my save 😭</span></div></div>'
+    + '<div class="a-row"><span class="av" data-av="kenji"></span><div><b>kenji.eth</b><span>Summer_2026_4k.zip</span></div></div>'
     + '<div class="a-row"><span class="av" data-av="maya"></span><div><b>alice.eth</b><span>nobody asked the pigeons</span></div></div>'
     + '<div class="a-row"><span class="av" data-av="b"></span><div><b>Speedrun Lab</b><span>Luna: [image]</span></div></div>'
     + '</div>'
@@ -1307,7 +1312,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
       { who:'kenji', t:'who is running the planting weekend?', at:'21:41' },
       { who:'maya', t:'me. bring gloves and patience', reply:{ who:'kenji', t:'who is running the planting weekend?' }, at:'21:50' },
       { who:'rui', t:'voting closes on friday', at:'21:56' } ] },
-    market:{ name:'Market.News', av:'a', glyph:'ethd', online:58, msgs:[
+    market:{ name:'Market.News', thumb:'market', glyph:'ethd', online:58, msgs:[
       { who:'rui', t:'CPI came in hot', at:'21:31' },
       { who:'kenji', t:'bonds did not like that', at:'21:32' },
       { who:'kenji', img:'chart' },
@@ -1323,7 +1328,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
       + '<div class="a-ht"><div class="a-hn">' + r.name + '</div><div class="a-hs"><i data-ic="' + r.glyph + '"></i>· ' + r.online + ' Online</div></div>'
       + '<div class="a-hr">' + (preview ? '<span class="a-join"><i data-ic="plus"></i>Join</span>' : '<i data-ic="invite"></i>') + '<i data-ic="kebab"></i></div></div>'
       + '<div class="a-body"><div class="a-list bare js-list"></div></div>'
-      + '<div class="a-comp"><i data-ic="attach"></i><i data-ic="smile"></i><div class="a-field">Message…</div><span class="a-send" data-ic="send"></span></div>'
+      + '<div class="a-comp"><i data-ic="attach"></i><i data-ic="mood"></i><div class="a-field">Message…</div><span class="a-send" data-ic="send"></span></div>'
       + '<div class="a-gest"><i></i></div>';
   }
   function openRoom(key, preview){
@@ -1494,10 +1499,10 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
 
   var dm = new Chat($('#dm-card'), 'tomas', 'a');
   [
-    { who:'kenji', t:'your texture pack broke my save 😭', at:'22:31' },
-    { who:'tomas', t:"it says back up first. it's pinned", at:'22:32' },
-    { who:'kenji', t:'who reads pinned messages', at:'22:32' },
-    { who:'tomas', file:{ name:'rocks-moss-v2.1.zip', size:'48.4 MB' }, at:'22:34' }
+    { who:'kenji', t:'back from the Azores. whales, volcanoes, zero signal 🐋', at:'22:31' },
+    { who:'tomas', t:'send everything. even the blurry ones', at:'22:32' },
+    { who:'kenji', t:'you asked for it. the whole summer, in 4K', at:'22:33' },
+    { who:'kenji', file:{ name:'Summer_2026_4k.zip', size:'3.2 GB' }, at:'22:34' }
   ].forEach(function(m){ dm.add(m); });
 
   $$('.cmp-seg button').forEach(function(b){
