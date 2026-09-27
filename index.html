@@ -278,6 +278,7 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .a-sb{height:32px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:4px 24px 0;background:#09090B;font-size:13px;font-weight:600;color:#E4E4E7}
 .a-sb span{display:flex;gap:5px;align-items:center}
 .a-sb svg{width:15px;height:15px}
+.a-ni{width:14px;height:14px;margin-left:3px;background:currentColor;-webkit-mask:url(favicon/notification.png) center/contain no-repeat;mask:url(favicon/notification.png) center/contain no-repeat}
 .a-gest{height:22px;flex:none;display:grid;place-items:center;background:#09090B}
 .a-gest i{width:108px;height:4px;border-radius:4px;background:rgba(255,255,255,.4)}
 .a-head{height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;background:#000;border-bottom:1px solid rgba(255,255,255,.04)}
@@ -750,7 +751,7 @@ section[id]{scroll-margin-top:40px}
 
     <div class="dev" id="dev-phone">
       <div class="ph"><div class="ph-scr" id="phone-chat">
-        <div class="a-sb"><span>22:06</span><span data-ic="status"></span></div>
+        <div class="a-sb"><span>22:06<i class="a-ni"></i></span><span data-ic="status"></span></div>
         <div class="a-head">
           <i data-ic="back"></i>
           <span class="av tram"></span>
@@ -1238,7 +1239,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
   var current = 0;
   var DOOR_MS = 8200;
 
-  var HOME = '<div class="a-sb"><span>22:14</span><span data-ic="status"></span></div>'
+  var HOME = '<div class="a-sb"><span>22:14<i class="a-ni"></i></span><span data-ic="status"></span></div>'
     + '<div class="a-home"><div class="a-home-h"><img src="favicon/favicon-96x96.png" alt=""><b>Pombo</b><span><i class="a-rb">#</i><i class="a-rb" data-ic="wallet"></i><i class="a-rb" data-ic="bell"></i></span></div>'
     + '<div class="a-tabs"><span class="on">ALL</span><span>PERSONAL</span><span>COMMUNITIES</span></div>'
     + '<div class="a-rows">'
@@ -1284,7 +1285,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
   };
 
   function roomHtml(r, preview){
-    return '<div class="a-sb"><span>22:14</span><span data-ic="status"></span></div>'
+    return '<div class="a-sb"><span>22:14<i class="a-ni"></i></span><span data-ic="status"></span></div>'
       + '<div class="a-head"><i data-ic="back"></i>'
       + (r.thumb ? '<span class="av ' + r.thumb + '"></span>' : av(r.av))
       + '<div class="a-ht"><div class="a-hn">' + r.name + '</div><div class="a-hs"><i data-ic="' + r.glyph + '"></i>· ' + r.online + ' Online</div></div>'
