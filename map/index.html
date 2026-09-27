@@ -119,7 +119,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ctl[hidden]{display:none}
 .fs .head,.fs .picker{display:none}
 html.fs{overflow:hidden}
-.fs .map{padding-top:8px;padding-bottom:0}
+.fs .map{padding-top:var(--fs-pad,8px);padding-bottom:0}
 .fs .canvas{touch-action:none;cursor:grab}
 .fs .canvas.panning{cursor:grabbing}
 .ctl.main{width:34px;height:34px;background:var(--acc);border-color:var(--acc);color:#000}
@@ -157,7 +157,7 @@ html.fs{overflow:hidden}
 .compact .brand{gap:10px}
 .compact .brand img{width:36px;height:36px}
 .compact .brand h1{font-size:28px}
-.compact .facts{grid-template-columns:1fr;gap:6px;margin-top:12px;font-size:14px;line-height:1.4}
+.compact .facts{grid-template-columns:1fr;gap:4px;margin-top:10px;font-size:12px;line-height:1.35}
 .compact .facts li{align-items:baseline}
 .compact .facts li span{width:16px;transform:translateY(-4px)}
 .compact .picker{flex-wrap:wrap;white-space:normal;row-gap:8px;padding:6px 8px 10px;font-size:13px}
@@ -190,6 +190,7 @@ html.fs{overflow:hidden}
     d.style.setProperty('--map-zoom', z);
     d.style.setProperty('--map-unzoom', 1 / z);
     d.classList.toggle('compact', z < 0.7);
+    d.style.setProperty('--fs-pad', Math.max(8, (innerHeight - dh - 1000 * z) / 2 / z) + 'px');
     document.body && (document.body.style.paddingBottom = dh + 'px');
   }
   fit();
@@ -380,8 +381,9 @@ html.fs{overflow:hidden}
   };
 
   // Step: [edge, text, motion, stretch, fx, streams]. Motion: segment digits (0 Alice to 3 Dave on client links),
-  // 'r' reversed, ',' together, '>' in sequence. Stretch scales the travel time; fx marks cards and rows until the
-  // chapter ends; streams names the stream boxes that step uses.
+  // 'r' reversed, ',' together, '>' in sequence; a segment repeated in one leg sends its dots one just behind the
+  // other. Stretch scales the travel time; fx marks cards and rows until the chapter ends; streams names the stream
+  // boxes that step uses.
   function uses(streams, step) { var s = step.slice(); s[5] = streams; return s; }
   var FIND = ['cg', 'Explore lists visible channels from the subgraph; hidden ones are shared by link.', null, 1.8];
   var LOOKUP = ['cg', 'Charlie’s client looks up the channel’s streams and permissions in the subgraph.', null, 1.8];
@@ -401,7 +403,7 @@ html.fs{overflow:hidden}
       uses('push', ['sr', 'Alice’s client broadcasts a wake: the tag, a public/private flag and a proof-of-work.', null, null, { tags: ['Bob', 'Charlie', 'Dave'] }]),
       ['rps', 'The relay checks the proof-of-work and wakes every device under tag 0x75, about 1 in 256 registrations.', null, 1.6, { regs: [0, 1] }],
       ['psc', 'FCM, APNs or Web Push deliver to all of them. None can tell which device is meant.', '1,3', 2.4, { cards: { Charlie: ['not woken', 'dim'] } }],
-      uses('s1', ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', null, 1.3]),
+      uses('s1', ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', '0,0', 1.6]),
       [null, 'Bob’s phone ' + finds + ' Alice’s message and notifies him. Dave’s iPhone, woken for #News, stays silent. Charlie’s PWA, on another tag, never wakes.', null, null,
         { cards: { Bob: ['notification', 'win'], Dave: ['nothing new', 'plain'] } }]] };
   }
@@ -474,6 +476,9 @@ html.fs{overflow:hidden}
     gated: { intro: 'Follow a gated channel from its creation to its moderation.', chapters: [
       { id: 'create', name: 'Create a channel', title: 'Bob creates a gated channel', steps: [
         uses('s1 s2 s3 s4 s5', ['cp', 'Bob registers the channel’s streams on Polygon, with their permissions and storage. A gated channel also gets its own gate contract.']),
+        uses('s4', ['cs', 'Bob’s client announces the channel keys on the keys stream (-4): their hashes, never the keys.', '1', null,
+          { key: ['epoch', 'publish', 'inter'] }]),
+        uses('s4', ['sst', 'Storage keeps the announces, plus a copy of each key sealed to Bob’s own account.']),
         ['pg', 'The Graph indexes the new streams and permissions.'],
         FIND] },
       { id: 'keys', name: 'Get channel keys', title: 'Charlie gets the keys', steps: [
@@ -702,7 +707,7 @@ html.fs{overflow:hidden}
   }
 
   // ---- dots ----
-  var dotLayer = $('#dots'), dotPool = [];
+  var dotLayer = $('#dots'), dotPool = [], TWIN_LAG = 0.18;
   function dot(i, color) {
     var g = dotPool[i];
     if (!g) {
@@ -725,14 +730,18 @@ html.fs{overflow:hidden}
       var legs = (st.motion || ed.d.map(function (_, i) { return String(i); }).join(',')).split('>').map(function (l) { return l.split(','); });
       var legDur = st.travel / legs.length;
       legs.forEach(function (leg, j) {
-        var p = (local - j * legDur) / legDur;
+        var p = (local - j * legDur) / legDur, seen = {};
         if (p < 0 || p > 1) return;
         leg.forEach(function (seg) {
+          var k = seen[seg] || 0, twins = leg.filter(function (s) { return s === seg; }).length - 1;
+          seen[seg] = k + 1;
+          var q = p * (1 + TWIN_LAG * twins) - TWIN_LAG * k;
+          if (q < 0 || q > 1) return;
           var path = pathEls[st.edge][parseInt(seg, 10)], len = path.getTotalLength();
-          var pt = path.getPointAtLength(len * (seg.charAt(seg.length - 1) === 'r' ? 1 - p : p));
+          var pt = path.getPointAtLength(len * (seg.charAt(seg.length - 1) === 'r' ? 1 - q : q));
           var g = dot(n++, C[ed.k]);
           g.setAttribute('transform', 'translate(' + pt.x + ' ' + pt.y + ')');
-          g.style.opacity = Math.min(1, p / 0.08, (1 - p) / 0.12);
+          g.style.opacity = Math.min(1, q / 0.08, (1 - q) / 0.12);
           g.style.display = '';
         });
       });
@@ -951,6 +960,10 @@ html.fs{overflow:hidden}
     this.setAttribute('aria-pressed', off ? 'false' : 'true');
     if (!off && free) { free = null; placeBubble(); }
   });
+  if (!matchMedia('(max-width:760px),(max-height:500px)').matches) {
+    $('#dock').classList.remove('nocap');
+    $('#cc').setAttribute('aria-pressed', 'true');
+  }
 
   var root = document.documentElement;
   var EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
