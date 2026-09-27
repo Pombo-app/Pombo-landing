@@ -501,14 +501,6 @@ section[id]{scroll-margin-top:40px}
 .map-btn{height:44px;padding:0 20px;font-size:15px;font-weight:500;color:var(--t2)}
 .map-btn:hover{color:var(--t1)}
 .map-btn i{display:grid}
-.mapbox{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;background:#09090b}
-.mapbox[hidden]{display:none}
-.mapbox-bar{flex:none;height:56px;display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:0 16px;border-bottom:1px solid var(--line)}
-.mapbox-tab{font-size:14px;color:var(--t2);transition:color .2s}
-.mapbox-tab:hover{color:var(--t1)}
-.mapbox-x{width:40px;height:40px;border-radius:12px;border:1px solid var(--line2);display:grid;place-items:center}
-.mapbox-x svg{width:18px;height:18px}
-.mapbox-frame{flex:1;width:100%;border:0;background:#09090b}
 
 /* compare */
 .sub.cmp-sub{max-width:none}
@@ -853,7 +845,7 @@ section[id]{scroll-margin-top:40px}
         <i class="ic" data-ic="code"></i><b>Your app</b><p>The protocol is documented and both apps are MIT licensed.</p><span class="go">Read the protocol</span>
       </a>
     </div>
-    <div class="more"><a class="btn btn-ghost map-btn" id="map-open" href="map/"><i data-ic="nodes"></i>Explore the protocol map</a></div>
+    <div class="more"><a class="btn btn-ghost map-btn" href="map/" target="_blank" rel="noopener"><i data-ic="nodes"></i>Explore the protocol map</a></div>
     <div class="powered">
       <p class="powered-t">Powered by</p>
       <div class="pw-row">
@@ -943,14 +935,6 @@ section[id]{scroll-margin-top:40px}
     </nav>
   </div>
 </footer>
-
-<div class="mapbox" id="mapbox" role="dialog" aria-modal="true" aria-label="Pombo protocol map" hidden>
-  <div class="mapbox-bar">
-    <a class="mapbox-tab" href="map/" target="_blank" rel="noopener">Open in a new tab</a>
-    <button class="mapbox-x" id="mapbox-x" type="button" aria-label="Close the map"><i data-ic="x"></i></button>
-  </div>
-  <iframe class="mapbox-frame" id="mapbox-frame" title="Pombo protocol map" allow="fullscreen"></iframe>
-</div>
 
 <script type="application/ld+json">
 {
@@ -1081,28 +1065,6 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
   links.addEventListener('click', function(e){
     if (e.target.tagName === 'A') { links.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); solid(); }
   });
-
-  var mapOpen = $('#map-open'), mapBox = $('#mapbox'), mapFrame = $('#mapbox-frame'), mapX = $('#mapbox-x');
-  function mapKey(e){ if (e.key === 'Escape') closeMap(); }
-  function closeMap(){
-    if (mapBox.hidden) return;
-    mapBox.hidden = true;
-    $$('body > *').forEach(function(el){ el.inert = false; });
-    document.documentElement.style.overflow = '';
-    mapOpen.focus();
-  }
-  mapOpen.addEventListener('click', function(e){
-    if (e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || window.innerWidth < 900) return;
-    e.preventDefault();
-    if (!mapFrame.getAttribute('src')) mapFrame.src = mapOpen.getAttribute('href');
-    $$('body > *').forEach(function(el){ if (el !== mapBox) el.inert = true; });
-    mapBox.hidden = false;
-    document.documentElement.style.overflow = 'hidden';
-    mapX.focus();
-  });
-  mapX.addEventListener('click', closeMap);
-  document.addEventListener('keydown', mapKey);
-  mapFrame.addEventListener('load', function(){ mapFrame.contentWindow.addEventListener('keydown', mapKey); });
 
   // A scene owns its timers: bumping its token makes every pending sleep reject.
   function Scene(){ this.tok = 0; }
