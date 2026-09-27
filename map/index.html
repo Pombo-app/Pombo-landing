@@ -400,7 +400,8 @@ html.fs{overflow:hidden}
   }
   function wake(checks, finds) {
     return { id: 'wake', name: 'Push - Wake signal', title: 'Bob’s phone is woken', steps: [
-      uses('push', ['sr', 'Alice’s client broadcasts a wake: the tag, a public/private flag and a proof-of-work.', null, null, { tags: ['Bob', 'Charlie', 'Dave'] }]),
+      uses('push', ['cs', 'Alice’s client broadcasts a wake: the tag, a public/private flag and a proof-of-work.', '0', null, { tags: ['Bob', 'Charlie', 'Dave'] }]),
+      uses('push', ['sr', 'The push stream carries it to the relay.']),
       ['rps', 'The relay checks the proof-of-work and wakes every device under tag 0x75, about 1 in 256 registrations.', null, 1.6, { regs: [0, 1] }],
       ['psc', 'FCM, APNs or Web Push deliver to all of them. None can tell which device is meant.', '1,3', 2.4, { cards: { Charlie: ['not woken', 'dim'] } }],
       uses('s1', ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', '0,0', 1.6]),
