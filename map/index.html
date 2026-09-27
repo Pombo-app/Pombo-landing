@@ -956,6 +956,10 @@ html.fs{overflow:hidden}
     this.setAttribute('aria-pressed', off ? 'false' : 'true');
     if (!off && free) { free = null; placeBubble(); }
   });
+  if (!matchMedia('(max-width:760px),(max-height:500px)').matches) {
+    $('#dock').classList.remove('nocap');
+    $('#cc').setAttribute('aria-pressed', 'true');
+  }
 
   var root = document.documentElement;
   var EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
