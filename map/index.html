@@ -288,7 +288,7 @@ html.fs{overflow:hidden}
 
     <div class="blk solid" data-node="relay" style="left:900px;top:720px;width:400px;height:230px;padding:16px 20px;gap:8px">
       <div class="row"><div class="h18">Push relay</div><div class="mono11" style="color:var(--t3)">pombo-push</div></div>
-      <div class="d13">Sees no content, sender or account, and subscribes to the push stream, closed to public reads. Registrations arrive over Streamr, encrypted to its public key. Wake signals carry a 1-byte tag and a proof-of-work; it fans out to every device under that tag.</div>
+      <div class="d13">Sees no content, sender or account. It reads the push stream, closed to public reads, and fans each wake out to every device under its 1-byte tag.</div>
       <div class="regs" id="regs"></div>
     </div>
 
@@ -330,7 +330,7 @@ html.fs{overflow:hidden}
     { id: 'sst', a: 'streamr', b: 'storage', k: 'stream', d: ['M760 500H900'], x: 830, y: 500, t: 'retains history' },
     { id: 'sr', a: 'streamr', b: 'relay', k: 'stream', d: ['M760 820H900'], x: 830, y: 820, t: 'push stream' },
     { id: 'rps', a: 'relay', b: 'pushsvc', k: 'push', d: ['M1300 850H1360'] },
-    { id: 'psc', a: 'pushsvc', b: 'clients', k: 'push', d: CARD_Y.map(function (y) { return 'M1460 940V984H20V' + y + 'H58'; }), x: 1000, y: 984, t: 'wake device · FCM / Web Push / APNs' },
+    { id: 'psc', a: 'pushsvc', b: 'clients', k: 'push', d: CARD_Y.map(function (y) { return 'M1460 940V984H20V' + y + 'H58'; }), x: 1000, y: 984, t: 'wake device' },
     { id: 'cp', a: 'clients', b: 'polygon', k: 'chain', d: ['M120 300V140H460'], x: 290, y: 140, t: 'RPC · read / write contracts', both: true },
     { id: 'cg', a: 'clients', b: 'graph', k: 'http', d: ['M80 300V16H1330V40'], x: 700, y: 16, t: 'GraphQL queries' },
     { id: 'pg', a: 'polygon', b: 'graph', k: 'chain', d: ['M1020 140H1100'], x: 1060, y: 112, t: 'indexes' },
