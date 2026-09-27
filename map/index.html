@@ -508,6 +508,12 @@ html.fs{overflow:hidden}
 
   var TRAVEL = 1.6, REST = 1.2;
   var total = 0, chapters = [];
+  // The node a step's dot leaves from (first) or arrives at.
+  function hop(st, first) {
+    var legs = (st.motion || '0').split('>'), seg = legs[first ? 0 : legs.length - 1].split(',')[0];
+    var ed = byId[st.edge], back = seg.charAt(seg.length - 1) === 'r';
+    return first === back ? ed.b : ed.a;
+  }
   function timeChapters(story) {
     total = 0;
     chapters = story.map(function (ch, ci) {
@@ -518,6 +524,11 @@ html.fs{overflow:hidden}
         var st = { edge: s[0], text: s[1], motion: s[2], fx: s[4], streams: s[5] ? s[5].split(' ') : [], travel: travel, start: t, dur: Math.max(travel + 0.4, read) };
         t += st.dur;
         return st;
+      });
+      // A dot that only passes through Streamr leaves late, so it enters just as the next step's dot leaves.
+      steps.forEach(function (st, i) {
+        var next = steps[i + 1];
+        if (next && st.edge && next.edge && hop(st, false) === 'streamr' && hop(next, true) === 'streamr') st.lead = st.dur - st.travel - 0.4;
       });
       total = t + REST;
       return { id: ch.id, name: ch.name, title: ch.title, index: ci, steps: steps, start: start, end: total };
@@ -726,7 +737,7 @@ html.fs{overflow:hidden}
     var n = 0;
     var ch = state.active ? chapters[state.ci] : null, st = ch && ch.steps[state.si];
     if (st && st.edge && !reduced) {
-      var local = state.t - st.start, ed = byId[st.edge];
+      var local = state.t - st.start - (st.lead || 0), ed = byId[st.edge];
       var legs = (st.motion || ed.d.map(function (_, i) { return String(i); }).join(',')).split('>').map(function (l) { return l.split(','); });
       var legDur = st.travel / legs.length;
       legs.forEach(function (leg, j) {
