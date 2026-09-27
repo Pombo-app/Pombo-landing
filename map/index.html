@@ -79,6 +79,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .srow .sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .srow .meta{flex:none;display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;color:rgba(255,255,255,0.45)}
 .srow .meta svg{width:12px;height:12px;color:rgba(255,255,255,0.7)}
+.srow .meta svg.nostore{color:rgba(255,255,255,0.2)}
 .srow b{font-weight:500}
 .srow b i{font-style:normal;font-family:var(--mono);color:var(--streamr)}
 .srow p{margin:0;color:rgba(255,255,255,0.5)}
@@ -364,10 +365,14 @@ html.fs{overflow:hidden}
   var REGS = [['0x75', 'Bob’s phone'], ['0x75', 'Dave’s iPhone'], ['0x3f', 'Charlie’s PWA']];
 
   // Stream boxes: [suffix, name, what it carries, partitions, stored]; a DM inbox swaps -1 and -2 for its own two.
-  var DB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>';
+  function dbIcon(stored) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"' + (stored ? '' : ' class="nostore"') + '>'
+      + '<title>' + (stored ? 'stored' : 'not stored') + '</title><ellipse cx="12" cy="5" rx="8" ry="3"/>'
+      + '<path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>';
+  }
   var SROWS = {
     s1: { ch: ['-1', 'Messages', 'messages, overrides, stored files', 12, 1], dm: ['DM-1', 'Inbox', 'messages, sync, invites, files · only the owner reads', 13, 1] },
-    s2: { ch: ['-2', 'Live', 'presence, typing, P2P media', 3, 0], dm: ['DM-2', 'Inbox live', 'presence, typing, P2P media', 3, 0] },
+    s2: { ch: ['-2', 'Ephemeral', 'presence, typing, P2P media', 3, 0], dm: ['DM-2', 'Ephemeral', 'presence, typing, P2P media', 3, 0] },
     s3: { ch: ['-3', 'Admin', 'moderation, channel image, password check · owner only', 3, 1] },
     s4: { ch: ['-4', 'Keys', 'key announces, requests and answers, member roster', 4, 1] },
     s5: { ch: ['-5', 'Interactions', 'reactions', 3, 1] },
@@ -615,7 +620,7 @@ html.fs{overflow:hidden}
     document.querySelectorAll('.srow').forEach(function (row) {
       var k2 = row.getAttribute('data-stag'), def = SROWS[k2], d = (k === 'dm' && def.dm) || def.ch;
       row.querySelector('b').innerHTML = d[1] + (d[0] ? ' <i>' + d[0] + '</i>' : '');
-      row.querySelector('.meta').innerHTML = d[3] + (d[3] === 1 ? ' partition' : ' partitions') + ' · ' + (d[4] ? DB : 'live');
+      row.querySelector('.meta').innerHTML = d[3] + (d[3] === 1 ? ' partition' : ' partitions') + ' · ' + dbIcon(d[4]);
       row.querySelector('p').textContent = d[2];
       var t = k2 === 'push' ? ['none', 'tag + PoW · sealed reg.'] : (ct.tags[k2] || ['none', 'n/a', 1]);
       var pill = row.querySelector('.pill');
