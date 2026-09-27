@@ -125,6 +125,14 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .triad span{color:var(--acc);white-space:nowrap}
 .lede{position:relative;max-width:56ch;margin:14px auto 0;font-size:1.02rem;line-height:1.55;color:var(--t2)}
 .ctas{position:relative;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+.inst{position:relative;display:flex}
+.inst .chev{width:16px;height:16px;margin-left:-2px;transition:transform .2s}
+.inst [aria-expanded="true"] .chev{transform:rotate(180deg)}
+.inst-menu{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);min-width:230px;padding:6px;border-radius:16px;background:var(--s2);border:1px solid var(--line2);box-shadow:0 20px 50px -12px rgba(0,0,0,.85);z-index:20;text-align:left}
+.inst-menu[hidden]{display:none}
+.inst-menu a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:500;color:var(--t1)}
+.inst-menu a:hover,.inst-menu a:focus-visible{background:rgba(255,255,255,.06);outline:none}
+.inst-menu svg{width:20px;height:20px;flex:none;color:var(--t2)}
 .trust{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;margin-top:24px;list-style:none;font-size:14px;color:var(--t3)}
 .trust li{display:flex;align-items:center;gap:8px}
 .trust svg{width:16px;height:16px;color:var(--acc);flex:none}
@@ -141,6 +149,10 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
   .ctas{gap:10px;flex-wrap:nowrap}
   .ctas .btn{flex:1 1 0;min-width:0;height:48px;padding:0 12px;font-size:15px}
   .ctas .btn svg{display:none}
+  .inst{flex:1 1 0;min-width:0}
+  .inst .btn{width:100%}
+  .ctas .inst .chev{display:block}
+  .inst-menu{left:auto;right:0;transform:none}
   .trust{gap:8px 18px;font-size:13.5px}
   .dev-lab{font-size:10.5px;gap:5px;color:var(--t3)}
   .dev-lab i{width:5px;height:5px;box-shadow:0 0 0 1.5px #000,0 0 5px rgba(34,197,94,.45)}
@@ -690,10 +702,19 @@ section[id]{scroll-margin-top:40px}
     <p class="lede">A social app where your messages, your communities, and what you earn from them belong to you.</p>
     <div class="ctas">
       <a href="https://app.pombo.cc" class="btn btn-acc">Open Pombo</a>
-      <a href="https://app.pombo.cc#install" class="btn btn-ghost">
-        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Install the app
-      </a>
+      <div class="inst">
+        <button type="button" class="btn btn-ghost" id="inst-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="inst-menu">
+          <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Install the app
+          <svg class="chev" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="inst-menu" id="inst-menu" role="menu" hidden>
+          <a role="menuitem" href="https://app.pombo.cc#install"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10"/><path d="M7 20h10"/><path d="M9 16v4"/><path d="M15 16v4"/></svg>Desktop</a>
+          <a role="menuitem" href="https://app.pombo.cc#install"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8.286 7.008c-3.216 0 -4.286 3.23 -4.286 5.92c0 3.229 2.143 8.072 4.286 8.072c1.165 -.05 1.799 -.538 3.214 -.538c1.406 0 1.607 .538 3.214 .538s4.286 -3.229 4.286 -5.381c-.03 -.011 -2.649 -.434 -2.679 -3.23c-.02 -2.335 2.589 -3.179 2.679 -3.228c-1.096 -1.606 -3.162 -2.113 -3.75 -2.153c-1.535 -.12 -3.032 1.077 -3.75 1.077c-.729 0 -2.036 -1.077 -3.214 -1.077"/><path d="M12 4a2 2 0 0 0 2 -2a2 2 0 0 0 -2 2"/></svg>iOS</a>
+          <a role="menuitem" href="https://github.com/Pombo-app/Pombo-Android/releases/latest" target="_blank" rel="noopener"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 10l0 6"/><path d="M20 10l0 6"/><path d="M7 9h10v8a1 1 0 0 1 -1 1h-8a1 1 0 0 1 -1 -1v-8a5 5 0 0 1 10 0"/><path d="M8 3l1 2"/><path d="M16 3l-1 2"/><path d="M9 18l0 3"/><path d="M15 18l0 3"/></svg>Android (APK)</a>
+          <a role="menuitem" href="https://app.pombo.cc#install"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 10l0 6"/><path d="M20 10l0 6"/><path d="M7 9h10v8a1 1 0 0 1 -1 1h-8a1 1 0 0 1 -1 -1v-8a5 5 0 0 1 10 0"/><path d="M8 3l1 2"/><path d="M16 3l-1 2"/><path d="M9 18l0 3"/><path d="M15 18l0 3"/></svg>Android (PWA)</a>
+        </div>
+      </div>
     </div>
     <ul class="trust">
       <li><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5"/></svg>No email or phone</li>
@@ -1070,6 +1091,13 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
   links.addEventListener('click', function(e){
     if (e.target.tagName === 'A') { links.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); solid(); }
   });
+
+  var instBtn = $('#inst-btn'), instMenu = $('#inst-menu');
+  function instOpen(open){ instMenu.hidden = !open; instBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  instBtn.addEventListener('click', function(e){ e.stopPropagation(); instOpen(instMenu.hidden); });
+  instMenu.addEventListener('click', function(e){ if (e.target.closest('a')) instOpen(false); });
+  document.addEventListener('click', function(e){ if (!instMenu.hidden && !instMenu.contains(e.target)) instOpen(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !instMenu.hidden) { instOpen(false); instBtn.focus(); } });
 
   // A scene owns its timers: bumping its token makes every pending sleep reject.
   function Scene(){ this.tok = 0; }
