@@ -187,6 +187,8 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .w-top-r{margin-left:auto;display:flex;gap:8px;align-items:center}
 .w-ib{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:rgba(255,255,255,.7)}
 .w-ib svg{width:18px;height:18px}
+.w-bell{position:relative}
+.w-bell::after{content:'1';position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#F6851B;color:#fff;font-size:9px;font-weight:700;line-height:16px;text-align:center}
 .w-acct{display:flex;align-items:center;gap:9px;height:42px;padding:0 14px 0 4px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font:500 12.5px var(--mono);color:rgba(255,255,255,.8)}
 .w-acct .av{width:32px;height:32px}
 .w-body{display:grid;grid-template-columns:300px 1fr;min-height:0}
@@ -735,7 +737,7 @@ section[id]{scroll-margin-top:40px}
             <img src="favicon/favicon-96x96.png" alt=""><b>Pombo</b>
             <div class="w-top-r">
               <span class="w-ib" data-ic="wallet"></span>
-              <span class="w-ib" data-ic="bell"></span>
+              <span class="w-ib w-bell" data-ic="bell"></span>
               <span class="w-acct"><span class="av" data-av="maya"></span>alice.eth</span>
             </div>
           </div>
