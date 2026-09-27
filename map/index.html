@@ -476,6 +476,9 @@ html.fs{overflow:hidden}
     gated: { intro: 'Follow a gated channel from its creation to its moderation.', chapters: [
       { id: 'create', name: 'Create a channel', title: 'Bob creates a gated channel', steps: [
         uses('s1 s2 s3 s4 s5', ['cp', 'Bob registers the channel’s streams on Polygon, with their permissions and storage. A gated channel also gets its own gate contract.']),
+        uses('s4', ['cs', 'Bob’s client announces the channel keys on the keys stream (-4): their hashes, never the keys.', '1', null,
+          { key: ['epoch', 'publish', 'inter'] }]),
+        uses('s4', ['sst', 'Storage keeps the announces, plus a copy of each key sealed to Bob’s own account.']),
         ['pg', 'The Graph indexes the new streams and permissions.'],
         FIND] },
       { id: 'keys', name: 'Get channel keys', title: 'Charlie gets the keys', steps: [
