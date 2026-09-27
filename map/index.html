@@ -380,8 +380,9 @@ html.fs{overflow:hidden}
   };
 
   // Step: [edge, text, motion, stretch, fx, streams]. Motion: segment digits (0 Alice to 3 Dave on client links),
-  // 'r' reversed, ',' together, '>' in sequence. Stretch scales the travel time; fx marks cards and rows until the
-  // chapter ends; streams names the stream boxes that step uses.
+  // 'r' reversed, ',' together, '>' in sequence; a segment repeated in one leg sends its dots one just behind the
+  // other. Stretch scales the travel time; fx marks cards and rows until the chapter ends; streams names the stream
+  // boxes that step uses.
   function uses(streams, step) { var s = step.slice(); s[5] = streams; return s; }
   var FIND = ['cg', 'Explore lists visible channels from the subgraph; hidden ones are shared by link.', null, 1.8];
   var LOOKUP = ['cg', 'Charlie’s client looks up the channel’s streams and permissions in the subgraph.', null, 1.8];
@@ -401,7 +402,7 @@ html.fs{overflow:hidden}
       uses('push', ['sr', 'Alice’s client broadcasts a wake: the tag, a public/private flag and a proof-of-work.', null, null, { tags: ['Bob', 'Charlie', 'Dave'] }]),
       ['rps', 'The relay checks the proof-of-work and wakes every device under tag 0x75, about 1 in 256 registrations.', null, 1.6, { regs: [0, 1] }],
       ['psc', 'FCM, APNs or Web Push deliver to all of them. None can tell which device is meant.', '1,3', 2.4, { cards: { Charlie: ['not woken', 'dim'] } }],
-      uses('s1', ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', null, 1.3]),
+      uses('s1', ['cst', 'Each woken device checks ' + checks + ' under that tag with their storage providers.', '0,0', 1.6]),
       [null, 'Bob’s phone ' + finds + ' Alice’s message and notifies him. Dave’s iPhone, woken for #News, stays silent. Charlie’s PWA, on another tag, never wakes.', null, null,
         { cards: { Bob: ['notification', 'win'], Dave: ['nothing new', 'plain'] } }]] };
   }
@@ -702,7 +703,7 @@ html.fs{overflow:hidden}
   }
 
   // ---- dots ----
-  var dotLayer = $('#dots'), dotPool = [];
+  var dotLayer = $('#dots'), dotPool = [], TWIN_LAG = 0.18;
   function dot(i, color) {
     var g = dotPool[i];
     if (!g) {
@@ -725,14 +726,18 @@ html.fs{overflow:hidden}
       var legs = (st.motion || ed.d.map(function (_, i) { return String(i); }).join(',')).split('>').map(function (l) { return l.split(','); });
       var legDur = st.travel / legs.length;
       legs.forEach(function (leg, j) {
-        var p = (local - j * legDur) / legDur;
+        var p = (local - j * legDur) / legDur, seen = {};
         if (p < 0 || p > 1) return;
         leg.forEach(function (seg) {
+          var k = seen[seg] || 0, twins = leg.filter(function (s) { return s === seg; }).length - 1;
+          seen[seg] = k + 1;
+          var q = p * (1 + TWIN_LAG * twins) - TWIN_LAG * k;
+          if (q < 0 || q > 1) return;
           var path = pathEls[st.edge][parseInt(seg, 10)], len = path.getTotalLength();
-          var pt = path.getPointAtLength(len * (seg.charAt(seg.length - 1) === 'r' ? 1 - p : p));
+          var pt = path.getPointAtLength(len * (seg.charAt(seg.length - 1) === 'r' ? 1 - q : q));
           var g = dot(n++, C[ed.k]);
           g.setAttribute('transform', 'translate(' + pt.x + ' ' + pt.y + ')');
-          g.style.opacity = Math.min(1, p / 0.08, (1 - p) / 0.12);
+          g.style.opacity = Math.min(1, q / 0.08, (1 - q) / 0.12);
           g.style.display = '';
         });
       });
