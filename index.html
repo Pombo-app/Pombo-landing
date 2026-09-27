@@ -242,6 +242,7 @@ h2{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.035em;lin
 .a-q span{font-size:13px}
 .tram{background:#2b6cb0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect y='30' width='40' height='10' fill='%231f2937'/%3E%3Cpath d='M14 6h12M20 6v4' stroke='%23e5e7eb' stroke-width='1.2'/%3E%3Crect x='9' y='10' width='22' height='18' rx='3' fill='%23f5c518'/%3E%3Crect x='11' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='17.5' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='24' y='13' width='5' height='6' rx='1' fill='%23dbeafe'/%3E%3Crect x='9' y='22' width='22' height='2' fill='%23b91c1c'/%3E%3Ccircle cx='14' cy='29' r='2' fill='%23111'/%3E%3Ccircle cx='26' cy='29' r='2' fill='%23111'/%3E%3C/svg%3E") center/100% no-repeat}
 .tree{background:#123d2a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 7l9 12h-5l6 8H10l6-8h-5z' fill='%2334d399'/%3E%3Crect x='18.5' y='27' width='3' height='6' fill='%238b5a2b'/%3E%3C/svg%3E") center/100% no-repeat}
+.market{background:#111c33 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M5 14h30M5 22h30M5 30h30' stroke='%23ffffff' stroke-opacity='.08'/%3E%3Cpath d='M10 17v12M24 17v10' stroke='%23f87171' stroke-width='1.2'/%3E%3Cpath d='M17 14v12M31 8v13' stroke='%234ade80' stroke-width='1.2'/%3E%3Crect x='8' y='20' width='4' height='7' rx='.6' fill='%23f87171'/%3E%3Crect x='15' y='16' width='4' height='7' rx='.6' fill='%234ade80'/%3E%3Crect x='22' y='19' width='4' height='5' rx='.6' fill='%23f87171'/%3E%3Crect x='29' y='10' width='4' height='8' rx='.6' fill='%234ade80'/%3E%3C/svg%3E") center/100% no-repeat}
 .fl{display:flex;align-items:center;gap:10px;padding:5px 0 3px;min-width:210px}
 .fl-ic{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.07);display:grid;place-items:center;color:rgba(255,255,255,.75);flex:none}
 .fl-ic svg{width:18px;height:18px}
@@ -731,7 +732,7 @@ section[id]{scroll-margin-top:40px}
               <div class="w-tabs"><span class="on">ALL</span><span>PERSONAL</span><span>COMMUNITIES</span></div>
               <div class="w-rows">
                 <div class="w-row on"><span class="av tram"></span><div class="w-rt"><div class="w-rn">Lisbon News</div><div class="w-rp js-last">Rui: taxi drivers are not going to love this</div></div></div>
-                <div class="w-row"><span class="av" data-av="a"></span><div class="w-rt"><div class="w-rn">Market.News</div><div class="w-rp">Rui: CPI came in hot</div></div><span class="w-badge">3</span></div>
+                <div class="w-row"><span class="av market"></span><div class="w-rt"><div class="w-rn">Market.News</div><div class="w-rp">Rui: CPI came in hot</div></div><span class="w-badge">3</span></div>
                 <div class="w-row"><span class="av tree"></span><div class="w-rt"><div class="w-rn">Green DAO</div><div class="w-rp">Luna: voted yes 🌱</div></div></div>
                 <div class="w-row"><span class="av" data-av="kenji"></span><div class="w-rt"><div class="w-rn">kenji.eth</div><div class="w-rp">see you on sunday</div></div></div>
                 <div class="w-row"><span class="av forge"></span><div class="w-rt"><div class="w-rn">PC Gaming</div><div class="w-rp">You: turn off the waterfall shader</div></div><span class="w-badge">12</span></div>
@@ -1311,7 +1312,7 @@ var AC={"maya":"#67cb9c","tomas":"#6385d1","luna":"#bd58be","kenji":"#c67d51","r
       { who:'kenji', t:'who is running the planting weekend?', at:'21:41' },
       { who:'maya', t:'me. bring gloves and patience', reply:{ who:'kenji', t:'who is running the planting weekend?' }, at:'21:50' },
       { who:'rui', t:'voting closes on friday', at:'21:56' } ] },
-    market:{ name:'Market.News', av:'a', glyph:'ethd', online:58, msgs:[
+    market:{ name:'Market.News', thumb:'market', glyph:'ethd', online:58, msgs:[
       { who:'rui', t:'CPI came in hot', at:'21:31' },
       { who:'kenji', t:'bonds did not like that', at:'21:32' },
       { who:'kenji', img:'chart' },
