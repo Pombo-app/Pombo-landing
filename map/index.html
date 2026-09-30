@@ -61,7 +61,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .mini.chain.slot{background:none;border:1px dashed rgba(130,71,229,0.45)}
 .mini.grey{background:#1e1e1e}
 .mini.grey.slot{background:none;border:1px dashed rgba(255,255,255,0.15)}
-.card{flex:none;height:76px;box-sizing:border-box;padding:9px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:2px;transition:opacity .3s,border-color .3s}
+.card{flex:none;height:76px;box-sizing:border-box;padding:9px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:2px;transition:opacity .3s,border-color .3s,box-shadow .3s}
+.card.active{border-color:rgba(255,255,255,0.3);box-shadow:0 8px 24px -12px rgba(255,255,255,0.35)}
 .card .top{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:13.2px;color:var(--t3)}
 .card .out{opacity:0;transition:opacity .3s}
 .card .what{font-size:17px;font-weight:600}
@@ -382,10 +383,10 @@ html.fs{overflow:hidden}
 
   // Step: [edge, text, motion, stretch, fx, streams]. Motion: segment digits (0 Alice to 3 Dave on client links),
   // 'r' reversed, ',' together, '>' in sequence; a segment repeated in one leg sends its dots one just behind the
-  // other. Stretch scales the travel time; fx marks cards and rows until the chapter ends; streams names the stream
-  // boxes that step uses.
+  // other. Stretch scales the travel time; fx marks cards and rows until the chapter ends, and fx.who overrides the
+  // acting clients; streams names the stream boxes that step uses.
   function uses(streams, step) { var s = step.slice(); s[5] = streams; return s; }
-  var FIND = ['cg', 'Explore lists visible channels from the subgraph; hidden ones are shared by link.', null, 1.8];
+  var FIND = ['cg', 'Explore lists visible channels from the subgraph; hidden ones are shared by link.', null, 1.8, { who: [] }];
   var LOOKUP = ['cg', 'Charlie’s client looks up the channel’s streams and permissions in the subgraph.', null, 1.8];
   var RESOLVE = ['cg', 'It resolves the channel’s storage nodes and their endpoints, both registered on chain.', null, 1.8];
   var LIVE = [uses('s1', ['cs', 'Charlie, online, receives it live. Bob’s phone is asleep.', '2r']),
@@ -417,7 +418,7 @@ html.fs{overflow:hidden}
       register('the inbox’s'),
       { id: 'find', name: 'Find the inbox', title: 'Alice finds Bob’s inbox', steps: [
         uses('s1', ['cp', 'Alice’s client derives Bob’s inbox from his address, or his ENS name, and reads it from Polygon.']),
-        [null, 'The public key in its description must hash to Bob’s address, or Alice cannot send.', null, null, { cards: { Alice: ['key checked', 'win'] }, key: 'ecdh' }]] },
+        [null, 'The public key in its description must hash to Bob’s address, or Alice cannot send.', null, null, { cards: { Alice: ['key checked', 'win'] }, key: 'ecdh', who: ['Alice'] }]] },
       { id: 'send', name: 'Send a message', title: 'Alice sends Bob a DM', steps: [
         [null, 'Alice encrypts to Bob’s public key with a key made for this message alone (ECDH, then AES-256-GCM).', null, null, { key: 'ecdh' }],
         uses('s1', ['cs', 'She publishes it to his inbox under that key’s throwaway address. Her account’s signature rides inside, so only Bob learns it is her.', '0', null, { key: 'sealed' }]),
@@ -477,11 +478,11 @@ html.fs{overflow:hidden}
     gated: { intro: 'Follow a gated channel from its creation to its moderation.', chapters: [
       { id: 'create', name: 'Create a channel', title: 'Bob creates a gated channel', steps: [
         uses('s1 s2 s3 s4 s5', ['cp', 'Bob registers the channel’s streams on Polygon, with their permissions and storage. A gated channel also gets its own gate contract.']),
+        ['pg', 'The Graph indexes the new streams and permissions.'],
+        FIND,
         uses('s4', ['cs', 'Bob’s client announces the channel keys on the keys stream (-4): their hashes, never the keys.', '1', null,
           { key: ['epoch', 'publish', 'inter'] }]),
-        uses('s4', ['sst', 'Storage keeps the announces, plus a copy of each key sealed to Bob’s own account.']),
-        ['pg', 'The Graph indexes the new streams and permissions.'],
-        FIND] },
+        uses('s4', ['sst', 'Storage keeps the announces, plus a copy of each key sealed to Bob’s own account.'])] },
       { id: 'keys', name: 'Get channel keys', title: 'Charlie gets the keys', steps: [
         ['cp', 'The gate contract admits Charlie: allowlist, token, NFT or subscription.'],
         uses('s4', ['cs', 'Charlie posts a key request on the keys stream (-4), with a throwaway public key and his account’s public key.', '2']),
@@ -509,6 +510,22 @@ html.fs{overflow:hidden}
 
   var TRAVEL = 1.6, REST = 1.2;
   var total = 0, chapters = [];
+  // The clients a step shows acting; null continues the chapter's last ones.
+  function actorsOf(st) {
+    var ed = st.edge && byId[st.edge];
+    if (st.fx && st.fx.who) return st.fx.who;
+    if (ed && st.motion && ed.d.length === CLIENTS.length) {
+      return st.motion.match(/\d/g).map(function (d) { return CLIENTS[+d].who; });
+    }
+    if (ed && ed.a !== 'clients' && ed.b !== 'clients') return [];
+    if (/^(It|Its|He|His|She)\b/.test(st.text)) return null;
+    return firstNamed(st.text);
+  }
+  function firstNamed(text) {
+    var named = CLIENTS.map(function (c) { return { who: c.who, at: text.indexOf(c.who) }; })
+      .filter(function (n) { return n.at >= 0; }).sort(function (a, b) { return a.at - b.at; });
+    return named.length ? [named[0].who] : null;
+  }
   // The node a step's dot leaves from (first) or arrives at.
   function hop(st, first) {
     var legs = (st.motion || '0').split('>'), seg = legs[first ? 0 : legs.length - 1].split(',')[0];
@@ -531,8 +548,14 @@ html.fs{overflow:hidden}
         var next = steps[i + 1];
         if (next && st.edge && next.edge && hop(st, false) === 'streamr' && hop(next, true) === 'streamr') st.lead = st.dur - st.travel - 0.4;
       });
+      var last = [];
+      steps.forEach(function (st) {
+        st.actors = actorsOf(st) || last;
+        if (st.actors.length) last = st.actors;
+      });
       total = t + REST;
-      return { id: ch.id, name: ch.name, title: ch.title, index: ci, steps: steps, start: start, end: total };
+      // The client the chapter title names stays lit for the whole chapter.
+      return { id: ch.id, name: ch.name, title: ch.title, lead: firstNamed(ch.title) || [], index: ci, steps: steps, start: start, end: total };
     });
   }
 
@@ -713,6 +736,7 @@ html.fs{overflow:hidden}
       out.style.opacity = o ? 1 : 0;
       el.style.opacity = o && o[1] === 'dim' ? 0.45 : 1;
       el.style.borderColor = o && o[1] === 'win' ? '#4ade80' : '';
+      el.classList.toggle('active', !!(ch && ch.steps[state.si] && (ch.lead.indexOf(c.who) >= 0 || ch.steps[state.si].actors.indexOf(c.who) >= 0)));
     });
     regEls.forEach(function (el, i) { el.classList.toggle('hit', !!regs[i]); });
     document.querySelectorAll('#krows .krow').forEach(function (r) { r.classList.toggle('lit', key.indexOf(r.getAttribute('data-k')) >= 0); });
